@@ -26,3 +26,17 @@
 *.exe
 *.out
 *.app
+/filesystem/cominterface/Debug
+/filesystem/cominterface/x64/Debug
+/filesystem/Debug
+/filesystem/filesystem/Debug
+/filesystem/x64/Debug
+/filesystem/filesystem/x64/Debug/filesystem.tlog
+/filesystem/filesystem/x64/Debug/filesystem.log
+/filesystem/filesystem.VC.VC.opendb
+/filesystem/filesystem.VC.db
+/filesystem/ipch
+/filesystem/TestResults/cc1c5fa1-72df-4215-a05a-546b1253b5c7
+/filesystem/FileSystemTests/x64/Debug
+/filesystem/filesystem/x64/Debug
+/filesystem/.vs/filesystem/v14

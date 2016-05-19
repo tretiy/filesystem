@@ -2,21 +2,18 @@
 #include <vector>
 #include "FileDescriptor.h"
 #pragma once
-class IBaseFileSystem
+struct IBaseFileSystem
 {
-public:
-	IBaseFileSystem();
-	virtual ~IBaseFileSystem();
-
 	//filesystem operations
-	virtual bool createDirectory(std::string _directoryPath);
-	virtual bool removeDirectory(std::string _directoryPath, bool _isRecursive = false);
-	virtual std::vector<std::string> getDirectoriesList(std::string _directoryPath);
-	virtual std::vector<std::string> getFilesList(std::string _directoryPath);
-	virtual FileDescriptor createFile(std::string _fullName);
-	virtual bool removeFile(std::string _fullName);
-	virtual bool exists(std::string _path);
+	virtual bool createDirectory(std::string _directoryPath) = 0;
+	virtual bool removeDirectory(std::string _directoryPath, bool _isRecursive = false) = 0;
+	virtual std::vector<std::string> getDirectoriesList(std::string _directoryPath) = 0;
+	virtual std::vector<std::string> getFilesList(std::string _directoryPath) = 0;
+	virtual FileDescriptor createFile(std::string _fullName) = 0;
+	virtual bool removeFile(std::string _fullName) = 0;
+	virtual bool exists(std::string _path) = 0;
 	//file operations
-	
+	virtual bool OpenFileSystem(std::string pathToFile) = 0;
+	virtual bool CloseFileSystem() = 0;
 };
 
