@@ -40,3 +40,12 @@
 /filesystem/FileSystemTests/x64/Debug
 /filesystem/filesystem/x64/Debug
 /filesystem/.vs/filesystem/v14
+/filesystem/cominterface/Release
+/filesystem/cominterface/x64/Release
+/filesystem/filesystem/Release
+/filesystem/filesystem/x64/Release
+/filesystem/FileSystemTests/Debug
+/filesystem/FileSystemTests/Release
+/filesystem/FileSystemTests/x64/Release
+/filesystem/Release
+/filesystem/x64/Release

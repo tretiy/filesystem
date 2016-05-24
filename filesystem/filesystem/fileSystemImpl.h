@@ -1,13 +1,27 @@
 #pragma once
 #include "IBaseFileSystem.h"
 #include "supernode.h"
+#include "blocksbitmap.h"
+#include "groupDescriptor.h"
+#include "infoDescriptor.h"
 #include <fstream>
 class fileSystemImpl :public IBaseFileSystem
 	
 {
-	std::ifstream fileSystemSource;
+	std::fstream fileSystemSource;
 	supernode mainSector;
-
+	blocksbitmap blocks;
+	std::vector<groupDescriptor> groups;
+	std::vector<infoDescriptor> infos;
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version)
+	{
+		ar & mainSector;
+		ar & blocks;
+		ar & groups;
+		ar & infos;
+	}
 public:
 	fileSystemImpl();
 	virtual ~fileSystemImpl();

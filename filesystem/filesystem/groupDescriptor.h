@@ -1,16 +1,29 @@
 #pragma once
 #include <stddef.h>
 #include <string>
+#include <fstream>
+#include "boost\serialization\access.hpp"
+
 class groupDescriptor
 {
 	int infoNumber;			// Inode number
 	size_t entrySize;		// This directory entry's length
-	size_t fileNameLength;  // File name length
-	char entryType;			// (1 = regular file 2 = directory)
-	std::string fileName;	// file or directory name
-
+	size_t entryNameLength;  // File name length
+	bool isDirectory;		// true is directory
+	std::string entryName;	// file or directory name
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version)
+	{
+		ar & infoNumber;
+		ar & entrySize;
+		ar & entryNameLength;
+		ar & isDirectory;
+		ar & entryName;
+	}
 public:
 	groupDescriptor();
+	groupDescriptor(unsigned int _infoNumber, std::string& _entryName, bool _isDirectory);
 	~groupDescriptor();
 };
 

@@ -1,4 +1,6 @@
 #pragma once
+#include <fstream>
+#include "boost\serialization\access.hpp"
 class infoDescriptor
 {
 		/*File type and access rights
@@ -15,6 +17,13 @@ class infoDescriptor
 		Specific operating system information
 		Pointer to first data block
 		14 more pointers to data blocks*/
+
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version)
+	{
+		
+	}
 	
 public:
 	infoDescriptor();

@@ -6,6 +6,12 @@
 
 
 supernode::supernode()
+	:supernode(256,512,1024)
+{
+}
+
+supernode::supernode(unsigned int _infosCount, unsigned int _blockSize, unsigned int _fileSystemSize)
+	:infosCount(_infosCount), blockSize(_blockSize), fileSystemSize(_fileSystemSize)
 {
 }
 
@@ -13,15 +19,13 @@ supernode::~supernode()
 {
 }
 
-supernode&& supernode::LoadFromStream(std::fstream & file)
+void supernode::LoadFromStream(std::fstream & file)
 {
 	if (!file.is_open())
 		throw std::invalid_argument("stream without file");
 	
 		portable_binary_iarchive ia(file);
-		supernode node;
-		ia >> node;
-		return std::move(node);
+		ia >> *this;
 }
 
 bool supernode::SaveToStream(std::fstream & file)
@@ -39,6 +43,11 @@ bool supernode::SaveToStream(std::fstream & file)
 	}
 	return true;
 }
-
+bool operator==(const supernode& left, const supernode& right)
+{
+	return left.blockSize == right.blockSize &&
+		left.infosCount == right.infosCount &&
+		left.fileSystemSize == right.fileSystemSize;
+}
 
 

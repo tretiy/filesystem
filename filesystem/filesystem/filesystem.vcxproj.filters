@@ -1,26 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="blocksbitmap.cpp" />
     <ClCompile Include="fileSystemImpl.cpp" />
-    <ClCompile Include="groupDescriptor.cpp" />
-    <ClCompile Include="infoDescriptor.cpp" />
-    <ClCompile Include="supernode.cpp" />
     <ClCompile Include="portable_serialization\portable_binary_iarchive.cpp">
       <Filter>portable_serialization</Filter>
     </ClCompile>
     <ClCompile Include="portable_serialization\portable_binary_oarchive.cpp">
       <Filter>portable_serialization</Filter>
     </ClCompile>
+    <ClCompile Include="blocksbitmap.cpp">
+      <Filter>filesystemparts</Filter>
+    </ClCompile>
+    <ClCompile Include="supernode.cpp">
+      <Filter>filesystemparts</Filter>
+    </ClCompile>
+    <ClCompile Include="groupDescriptor.cpp">
+      <Filter>filesystemparts</Filter>
+    </ClCompile>
+    <ClCompile Include="infoDescriptor.cpp">
+      <Filter>filesystemparts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="blocksbitmap.h" />
-    <ClInclude Include="FileDescriptor.h" />
     <ClInclude Include="fileSystemImpl.h" />
-    <ClInclude Include="groupDescriptor.h" />
-    <ClInclude Include="IBaseFileSystem.h" />
-    <ClInclude Include="infoDescriptor.h" />
-    <ClInclude Include="supernode.h" />
     <ClInclude Include="portable_serialization\portable_binary_archive.hpp">
       <Filter>portable_serialization</Filter>
     </ClInclude>
@@ -30,10 +32,34 @@
     <ClInclude Include="portable_serialization\portable_binary_oarchive.hpp">
       <Filter>portable_serialization</Filter>
     </ClInclude>
+    <ClInclude Include="blocksbitmap.h">
+      <Filter>filesystemparts</Filter>
+    </ClInclude>
+    <ClInclude Include="supernode.h">
+      <Filter>filesystemparts</Filter>
+    </ClInclude>
+    <ClInclude Include="groupDescriptor.h">
+      <Filter>filesystemparts</Filter>
+    </ClInclude>
+    <ClInclude Include="infoDescriptor.h">
+      <Filter>filesystemparts</Filter>
+    </ClInclude>
+    <ClInclude Include="FileDescriptor.h">
+      <Filter>interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="IBaseFileSystem.h">
+      <Filter>interfaces</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="portable_serialization">
       <UniqueIdentifier>{5ac05ead-6ed9-428a-af54-8bdcd49a5d94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="filesystemparts">
+      <UniqueIdentifier>{25dc1a0f-34c2-44fb-9ddb-e94faed578ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="interfaces">
+      <UniqueIdentifier>{d0c18f2b-d0f4-4bc8-905c-e8dff42d04b1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
