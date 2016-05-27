@@ -13,7 +13,7 @@ struct IBaseFileSystem
 	virtual bool removeFile(std::string _fullName) = 0;
 	virtual bool exists(std::string _path) = 0;
 	//file operations
-	virtual bool OpenFileSystem(std::string pathToFile) = 0;
+	virtual bool OpenFileSystem(std::string pathToFile, bool createNew = false) = 0;
 	virtual bool CloseFileSystem() = 0;
 };
 

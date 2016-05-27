@@ -44,7 +44,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v140</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -119,7 +119,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="blocksbitmap.h" />
+    <ClInclude Include="DirectoryInfo.h" />
     <ClInclude Include="FileDescriptor.h" />
     <ClInclude Include="fileSystemImpl.h" />
     <ClInclude Include="groupDescriptor.h" />
@@ -128,16 +128,14 @@
     <ClInclude Include="portable_serialization\portable_binary_archive.hpp" />
     <ClInclude Include="portable_serialization\portable_binary_iarchive.hpp" />
     <ClInclude Include="portable_serialization\portable_binary_oarchive.hpp" />
-    <ClInclude Include="supernode.h" />
+    <ClInclude Include="FileSystemHeader.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="blocksbitmap.cpp" />
     <ClCompile Include="fileSystemImpl.cpp" />
     <ClCompile Include="groupDescriptor.cpp" />
-    <ClCompile Include="infoDescriptor.cpp" />
     <ClCompile Include="portable_serialization\portable_binary_iarchive.cpp" />
     <ClCompile Include="portable_serialization\portable_binary_oarchive.cpp" />
-    <ClCompile Include="supernode.cpp" />
+    <ClCompile Include="FileSystemHeader.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

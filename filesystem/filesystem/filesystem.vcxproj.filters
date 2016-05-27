@@ -8,16 +8,10 @@
     <ClCompile Include="portable_serialization\portable_binary_oarchive.cpp">
       <Filter>portable_serialization</Filter>
     </ClCompile>
-    <ClCompile Include="blocksbitmap.cpp">
-      <Filter>filesystemparts</Filter>
-    </ClCompile>
-    <ClCompile Include="supernode.cpp">
-      <Filter>filesystemparts</Filter>
-    </ClCompile>
     <ClCompile Include="groupDescriptor.cpp">
       <Filter>filesystemparts</Filter>
     </ClCompile>
-    <ClCompile Include="infoDescriptor.cpp">
+    <ClCompile Include="FileSystemHeader.cpp">
       <Filter>filesystemparts</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,12 +26,6 @@
     <ClInclude Include="portable_serialization\portable_binary_oarchive.hpp">
       <Filter>portable_serialization</Filter>
     </ClInclude>
-    <ClInclude Include="blocksbitmap.h">
-      <Filter>filesystemparts</Filter>
-    </ClInclude>
-    <ClInclude Include="supernode.h">
-      <Filter>filesystemparts</Filter>
-    </ClInclude>
     <ClInclude Include="groupDescriptor.h">
       <Filter>filesystemparts</Filter>
     </ClInclude>
@@ -49,6 +37,12 @@
     </ClInclude>
     <ClInclude Include="IBaseFileSystem.h">
       <Filter>interfaces</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSystemHeader.h">
+      <Filter>filesystemparts</Filter>
+    </ClInclude>
+    <ClInclude Include="DirectoryInfo.h">
+      <Filter>filesystemparts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
