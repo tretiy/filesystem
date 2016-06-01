@@ -1,7 +1,4 @@
 #include "FileSystemHeader.h"
-#include "portable_serialization\portable_binary_iarchive.hpp"
-#include "portable_serialization\portable_binary_oarchive.hpp"
-
 #include <exception>
 
 namespace filesystem
@@ -11,48 +8,34 @@ namespace filesystem
 	{
 	}
 
-	FileSystemHeader::FileSystemHeader(unsigned int _infosCount, unsigned int _blockSize, unsigned int _fileSystemSize)
-		: infosCount(_infosCount), blockSize(_blockSize), fileSystemSize(_fileSystemSize)
+	FileSystemHeader::FileSystemHeader(size_t _infosCount, size_t _blockSize, size_t _fileSystemSize)
+		: infosCount(_infosCount), blockSize(_blockSize), fileSystemSize(_fileSystemSize), dataOffset(0)
 	{
+
 	}
 
 	FileSystemHeader::~FileSystemHeader()
 	{
+
 	}
-
-	void FileSystemHeader::LoadFromStream(std::fstream & file)
-	{
-		if (!file.is_open())
-			throw std::invalid_argument("stream without file");
-
-		portable_binary_iarchive ia(file, boost::archive::archive_flags::no_header);
-		ia >> *this;
-	}
-
-	bool FileSystemHeader::SaveToStream(std::fstream & file)
-	{
-		if (!file.is_open())
-			throw std::invalid_argument("stream without file");
-		try
-		{
-			portable_binary_oarchive oa(file, boost::archive::archive_flags::no_header);
-			oa << *this;
-		}
-		catch (const std::exception&)
-		{
-			return false;
-		}
-		return true;
-	}
-
-	unsigned int FileSystemHeader::getBlockSize() const
+	size_t FileSystemHeader::getBlockSize() const
 	{
 		return blockSize;
 	}
 
-	unsigned int FileSystemHeader::getFileSystemSize() const
+	size_t FileSystemHeader::getFileSystemSize() const
 	{
 		return fileSystemSize;
+	}
+
+	void FileSystemHeader::setDataOffset(size_t offset)
+	{
+		dataOffset = offset;
+	}
+
+	size_t FileSystemHeader::getDataOffset()
+	{
+		return dataOffset;
 	}
 
 	bool operator==(const FileSystemHeader& left, const FileSystemHeader& right)

@@ -1,7 +1,6 @@
 #pragma once
 #include <stddef.h>
 #include <string>
-#include <fstream>
 #include "boost\serialization\access.hpp"
 
 namespace filesystem

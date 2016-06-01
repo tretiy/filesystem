@@ -122,6 +122,7 @@
     <ClInclude Include="DirectoryInfo.h" />
     <ClInclude Include="FileDescriptor.h" />
     <ClInclude Include="fileSystemImpl.h" />
+    <ClInclude Include="fsserialization.h" />
     <ClInclude Include="groupDescriptor.h" />
     <ClInclude Include="IBaseFileSystem.h" />
     <ClInclude Include="infoDescriptor.h" />

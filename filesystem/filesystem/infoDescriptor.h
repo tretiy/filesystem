@@ -1,5 +1,4 @@
 #pragma once
-#include <fstream>
 #include <chrono>
 #include "boost\serialization\access.hpp"
 #include "boost\serialization\binary_object.hpp"
@@ -21,17 +20,26 @@ namespace filesystem
 		}
 
 	public:
-		short fileType;								//File type 0 for Directory
-		short owner;								//Owner identification
-		unsigned long flength;						//File length in bytes
-		system_clock::time_point  lastAccess;		//Time of last file access
-		unsigned long blocksNum;					//Number of data blocks
-		unsigned long firstBlock;					//First data block 
+		short fileType = { 0 };											//File type 0 for Directory
+		short owner = { 0 };											//Owner identification
+		size_t flength = { 0 };									//File length in bytes
+		system_clock::time_point  lastAccess = system_clock::now();		//Time of last file access
+		size_t blocksNum = { 0 };								//Number of data blocks
+		size_t firstBlock = { 0 };								//First data block 
 		/*14 more pointers to data blocks*/
 		enum FileType
 		{
-			Directory = 0,
+			NotSet = 0,
+			Directory,
 			RegularFile
 		};
+		void updateLastAccess()
+		{
+			lastAccess = system_clock::now();
+		};
+		bool isValid()
+		{
+			return blocksNum > 0;
+		}
 	};
 }

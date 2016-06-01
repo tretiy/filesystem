@@ -1,14 +1,13 @@
 #pragma once
-#include <fstream>
 #include "boost\serialization\access.hpp"
 namespace filesystem
 {
 	class FileSystemHeader
 	{
-		//static const unsigned int SIZEONDISK = 128;
-		unsigned int infosCount;			// Total number of inodes
-		unsigned int blockSize;				// Block size
-		unsigned int fileSystemSize;		// File Sytem size in blocks
+		size_t dataOffset;			// Start offset of data 
+		size_t infosCount;			// Total number of info descriptors
+		size_t blockSize;			// Block size
+		size_t fileSystemSize;		// File Sytem size in blocks
 
 		friend class boost::serialization::access;
 		template<class Archive>
@@ -20,14 +19,14 @@ namespace filesystem
 		}
 	public:
 		FileSystemHeader();
-		FileSystemHeader(unsigned int _infosCount, unsigned int _blockSize, unsigned int _fileSystemSize);
-		void LoadFromStream(std::fstream& file);
+		FileSystemHeader(size_t _infosCount, size_t _blockSize, size_t _fileSystemSize);
 		FileSystemHeader(FileSystemHeader&& node) = default;
 		FileSystemHeader& operator=(const FileSystemHeader& newOne) = default;
 		friend bool operator==(const FileSystemHeader& left, const FileSystemHeader& right);
-		bool SaveToStream(std::fstream& file);
-		unsigned int getBlockSize() const;
-		unsigned int getFileSystemSize() const;
+		size_t getBlockSize() const;
+		size_t getFileSystemSize() const;
+		void setDataOffset(size_t offset);
+		size_t getDataOffset();
 		~FileSystemHeader();
 	};
 }

@@ -13,10 +13,10 @@ namespace filesystem
 			ar & name;
 		}
 	public:
-		unsigned int infoIdx;   //	Inode number
-		std::string  name;		//	Directory name
+		size_t infoIdx;   //	Inode number
+		std::wstring  name;		//	Directory name
 
-		DirectoryInfo();
-		~DirectoryInfo();
+		DirectoryInfo() = default;
+		~DirectoryInfo() = default;
 	};
 }
