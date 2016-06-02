@@ -13,6 +13,7 @@ namespace filesystem
 		template<class Archive>
 		void serialize(Archive & ar, const unsigned int version)
 		{
+			ar & dataOffset;
 			ar & infosCount;
 			ar & blockSize;
 			ar & fileSystemSize;

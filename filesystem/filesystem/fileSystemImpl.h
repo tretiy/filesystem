@@ -5,6 +5,8 @@
 #include "groupDescriptor.h"
 #include "infoDescriptor.h"
 #include "EntryData.h"
+#include "EntryBlocks.h"
+
 #include <fstream>
 #include "boost\serialization\vector.hpp"
 using namespace filesystem;
@@ -31,19 +33,28 @@ class fileSystemImpl :public IBaseFileSystem
 	}
 
 	std::streampos getBlockOffset(size_t _blockNum);
+	std::streampos getFileOffset(FileDescriptor& _file);
+	size_t getLengthToWrite(FileDescriptor& _file);
+
+	size_t getEntryBlockIdx(InfoDescriptor& _entryDesc, size_t _blockNumInFile);
+	EntryBlocks getEntryInderectBlocks(InfoDescriptor& _entryDesc);
+	bool setEntryInderectBlocks(InfoDescriptor& _entryDesc, EntryBlocks& _inderectBlocks);
+	bool addEntryDataBlock(InfoDescriptor& _entry);
+
 	size_t getFreeBlockIdx();
 	size_t getFreeInfoIdx();
 	InfoDescriptor getPathDescriptor(std::wstring _path);
 	size_t getPathDescriptorIdx(std::wstring _path);
-	InfoDescriptor getChildDescriptor(InfoDescriptor _parentDir, std::wstring _childName);
-	size_t getChildDescriptorIdx(InfoDescriptor _parentDir, std::wstring _childName);
+	InfoDescriptor getChildDescriptor(InfoDescriptor& _parentDir, std::wstring _childName);
+	size_t getChildDescriptorIdx(InfoDescriptor& _parentDir, std::wstring _childName);
 	bool removeDescriptorIdx(size_t _descIdx);
-	bool getDirectoryContent(InfoDescriptor _desc, std::vector<EntryData>& _content);
-	bool setDirectoryContent(InfoDescriptor _desc, std::vector<EntryData>& _content);
+	bool getDirectoryContent(InfoDescriptor& _desc, std::vector<EntryData>& _content);
+	bool setDirectoryContent(InfoDescriptor& _desc, std::vector<EntryData>& _content);
 	std::vector<std::wstring> fileSystemImpl::getDirectoryContentList(std::wstring _directoryPath,
 		EntryType _type = EntryType::NotSet);
 	bool createEntry(std::wstring _entryPath, EntryType _type);
 	bool removeEntry(std::wstring _entryPath);
+	bool renameEntry(std::wstring _entryPath, std::wstring _newName);
 	bool checkEntryName(std::wstring _entryName);
 
 public:
@@ -65,6 +76,8 @@ public:
 	virtual bool openFileSystem(std::string _pathToFile, bool _createNew = false) override;
 	virtual bool closeFileSystem() override;
 
+	FileDescriptor openFile(std::wstring _pathToFile);
+	size_t writeToFile(FileDescriptor& _file, const char* _data, size_t _count);
 	bool createFileSystem(std::string _pathToFile, size_t _blockSize, size_t _blocksCount);
 	bool initializeFileSystem();
 };

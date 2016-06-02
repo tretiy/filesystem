@@ -50,13 +50,13 @@ std::vector<std::wstring> fileSystemImpl::getDirectoryContentList(std::wstring _
 
 bool fileSystemImpl::createEntry(std::wstring _entryPath, EntryType _type)
 {
+	fs::path newPath(_entryPath);
 	//check if directory already exists
-	if (_type == EntryType::NotSet || !fileSystemSource.is_open() || !checkEntryName(_entryPath) || exists(_entryPath))
+	if (_type == EntryType::NotSet || !fileSystemSource.is_open() || !checkEntryName(newPath.filename().native()) || exists(_entryPath))
 		return false;
 
-	fs::path newPath(_entryPath);
 	auto parentDescriptor = getPathDescriptor(newPath.parent_path());
-	if (parentDescriptor.isValid())
+	if (parentDescriptor.isValid() && parentDescriptor.entryType == EntryType::Directory)
 	{
 		try
 		{
@@ -65,7 +65,7 @@ bool fileSystemImpl::createEntry(std::wstring _entryPath, EntryType _type)
 			entryInfo.entryType = _type;
 			entryInfo.blocksNum = 1;
 			entryInfo.updateLastAccess();
-			entryInfo.firstBlock = getFreeBlockIdx();
+			entryInfo.block_direct[0] = getFreeBlockIdx();
 
 			EntryData newEntry;
 			newEntry.type = _type;
@@ -81,7 +81,7 @@ bool fileSystemImpl::createEntry(std::wstring _entryPath, EntryType _type)
 			// save dirinfo to stream;
 			setDirectoryContent(parentDescriptor, content);
 			//change header data
-			dataBlocks[entryInfo.firstBlock] = true;
+			dataBlocks[entryInfo.block_direct[0]] = true;
 			infoBlocks[newEntry.infoIdx] = true;
 			infos[newEntry.infoIdx] = entryInfo;
 
@@ -131,9 +131,46 @@ bool fileSystemImpl::removeEntry(std::wstring _entryPath)
 	});
 	setDirectoryContent(parentDesc, parentContent);
 	//remove dir information
-	dataBlocks[infos[pathDescIdx].firstBlock] = false;
+	for (const auto& index : infos[pathDescIdx].block_direct)
+	{
+		if(index != 0) //root directory data block
+			dataBlocks[index] = false;
+	}
+	if (infos[pathDescIdx].blocksNum > InfoDescriptor::DIRECT_BLOCKS)
+	{
+		for (const auto& index : getEntryInderectBlocks(infos[pathDescIdx]).blocks)
+		{
+			dataBlocks[index] = false;
+		}
+		dataBlocks[infos[pathDescIdx].block_indirect] = false;
+	}
 	infoBlocks[pathDescIdx] = false;
 	infos[pathDescIdx] = InfoDescriptor();
+	SaveToStreamT(fileSystemSource, *this, std::streampos(0));
+	return true;
+}
+
+bool fileSystemImpl::renameEntry(std::wstring _entryPath, std::wstring _newName)
+{
+	auto pathDescIdx = getPathDescriptorIdx(_entryPath);
+	if (!checkEntryName(_newName) || pathDescIdx == infos.size() || pathDescIdx == 0) // do not allow to rename root dir
+	{
+		return false;
+	}
+	//update parent dir content
+	fs::path dirPath(_entryPath);
+	auto parentPath = dirPath.parent_path();
+	auto parentDesc = getPathDescriptor(parentPath);
+	std::vector<EntryData> parentContent;
+	getDirectoryContent(parentDesc, parentContent);
+	auto entryIter = std::find_if(parentContent.begin(), parentContent.end(), [&pathDescIdx](auto& elem)
+	{
+		return elem.infoIdx == pathDescIdx;
+	});
+	entryIter->name = _newName;
+	setDirectoryContent(parentDesc, parentContent);
+	//update entryinformation
+	infos[pathDescIdx].updateLastAccess();
 	SaveToStreamT(fileSystemSource, *this, std::streampos(0));
 	return true;
 }
@@ -193,6 +230,63 @@ bool fileSystemImpl::closeFileSystem()
 	return false;
 }
 
+FileDescriptor fileSystemImpl::openFile(std::wstring _pathToFile)
+{
+	auto file = FileDescriptor();
+	auto infoIdx = getPathDescriptorIdx(_pathToFile);
+	if (infoIdx != infos.size() && infos[infoIdx].entryType == EntryType::RegularFile)
+	{
+		file.infoDescIdx = infoIdx;
+	}
+	return file;
+}
+
+size_t fileSystemImpl::writeToFile(FileDescriptor & _file, const char * _data, size_t _count)
+{
+	//check descriptor
+	if (_file.infoDescIdx < infos.size() && infos[_file.infoDescIdx].entryType == EntryType::RegularFile && _count > 0)
+	{
+		auto& fileInfoDesc = infos[_file.infoDescIdx]; //TODO add reference
+		//file seek pos should be not greater than current file length
+		if (_file.seekPos <= fileInfoDesc.flength)
+		{
+			decltype(_count) writedCount = { 0 };
+			while (writedCount != _count)
+			{
+				auto seekPosInBlock = getFileOffset(_file);
+				if (seekPosInBlock == std::streampos(0))
+				{
+					//old file is too small to write all data add new data block
+					if (addEntryDataBlock(fileInfoDesc))
+					{
+						continue;
+					}
+					else
+					{
+						break;
+					}
+				}
+				auto maxlentowrite = getLengthToWrite(_file);
+				auto countToWrite = maxlentowrite <= _count - writedCount ? maxlentowrite : _count - writedCount;
+				fileSystemSource.seekp(seekPosInBlock);
+				fileSystemSource.write(&_data[writedCount], countToWrite);
+				if (!fileSystemSource.good())
+				{
+					break;
+				}
+				writedCount += countToWrite;
+				_file.seekPos += countToWrite;
+			}
+			//update file lenght in case we add some data to end of file
+			if (_file.seekPos > fileInfoDesc.flength)
+				fileInfoDesc.flength = _file.seekPos;
+			SaveToStreamT(fileSystemSource, *this, std::streampos(0));
+			return writedCount;
+		}
+	}
+	return size_t(0);
+}
+
 bool fileSystemImpl::createFileSystem(std::string _pathToFile, size_t _blockSize, size_t _blocksCount)
 {
 	if (fileSystemSource.is_open())
@@ -207,7 +301,7 @@ bool fileSystemImpl::createFileSystem(std::string _pathToFile, size_t _blockSize
 		infos.insert(infos.begin(), 512, InfoDescriptor());
 		infos[0].lastAccess = system_clock::now();
 		infos[0].blocksNum = 1;
-		infos[0].firstBlock = 0;
+		infos[0].block_direct[0] = 0;
 		infos[0].entryType = EntryType::Directory;
 		infoBlocks.insert(infoBlocks.begin(), 512, false);
 		dataBlocks.insert(dataBlocks.begin(), mainSector.getBlockSize(), false);
@@ -253,6 +347,123 @@ std::streampos fileSystemImpl::getBlockOffset(size_t _blockNum)
 	}
 	
 	throw std::exception("Block number is not valid");
+}
+
+std::streampos fileSystemImpl::getFileOffset(FileDescriptor & _file)
+{
+	auto posInBlock = _file.seekPos % mainSector.getBlockSize();
+
+	auto blockNumber = _file.seekPos / mainSector.getBlockSize();
+
+	auto blockIdx = getEntryBlockIdx(infos[_file.infoDescIdx], blockNumber);
+
+	if (blockIdx > 0)
+	{
+		return posInBlock + getBlockOffset(blockIdx);
+	}
+
+	return std::streampos(0);
+}
+
+size_t fileSystemImpl::getLengthToWrite(FileDescriptor & _file)
+{
+	auto posInBlock = _file.seekPos % mainSector.getBlockSize();
+	return mainSector.getBlockSize() - posInBlock;
+}
+
+size_t fileSystemImpl::getEntryBlockIdx(InfoDescriptor & _entryDesc, size_t _blockNumInFile)
+{
+	if (fileSystemSource.is_open() && _blockNumInFile < _entryDesc.blocksNum)
+	{
+		if (_blockNumInFile < InfoDescriptor::DIRECT_BLOCKS)
+		{
+			return _entryDesc.block_direct[_blockNumInFile];
+		}
+		else
+		{
+			auto indirectBlocks = getEntryInderectBlocks(_entryDesc);
+			const auto indirectIdx = _blockNumInFile - InfoDescriptor::DIRECT_BLOCKS;
+			if (indirectIdx < indirectBlocks.blocks.size())
+			{
+				return indirectBlocks.blocks[indirectIdx];
+			}
+		}
+	}
+	return size_t{ 0 };
+}
+
+EntryBlocks fileSystemImpl::getEntryInderectBlocks(InfoDescriptor & _entryDesc)
+{
+	if (fileSystemSource.is_open() && _entryDesc.blocksNum > InfoDescriptor::DIRECT_BLOCKS)
+	{
+		EntryBlocks indirectBlocks;
+		if (LoadFromStreamT(fileSystemSource, indirectBlocks, getBlockOffset(_entryDesc.block_indirect)))
+		{
+			return indirectBlocks;
+		}
+	}
+	return EntryBlocks();
+}
+
+bool fileSystemImpl::setEntryInderectBlocks(InfoDescriptor & _entryDesc, EntryBlocks & _inderectBlocks)
+{
+	try
+	{
+		if (fileSystemSource.is_open() && _entryDesc.blocksNum >= InfoDescriptor::DIRECT_BLOCKS)
+		{
+			//check if indirect block not exists
+			if (_entryDesc.block_indirect == 0)
+			{
+				auto newInderectBlockIdx = getFreeBlockIdx();
+				if (newInderectBlockIdx != 0)
+				{
+					dataBlocks[newInderectBlockIdx] = true;
+					_entryDesc.block_indirect = newInderectBlockIdx;
+					SaveToStreamT(fileSystemSource, *this, std::streampos(0));
+				}
+				else
+				{
+					return false;
+				}
+			}
+
+			return SaveToStreamT(fileSystemSource, _inderectBlocks, getBlockOffset(_entryDesc.block_indirect));
+		}
+	}
+	catch (const std::exception&)
+	{
+
+	}
+	return false;
+}
+
+bool fileSystemImpl::addEntryDataBlock(InfoDescriptor & _entry)
+{
+	if (fileSystemSource.is_open() && _entry.entryType == EntryType::RegularFile) //directory always have 1 data block
+	{
+		try
+		{
+			auto newDataBlockIdx = getFreeBlockIdx();
+			dataBlocks[newDataBlockIdx] = true;
+			if (_entry.blocksNum < InfoDescriptor::DIRECT_BLOCKS)
+			{
+				_entry.block_direct[_entry.blocksNum] = newDataBlockIdx;
+			}
+			else
+			{
+				auto inderectBlocks = getEntryInderectBlocks(_entry);
+				inderectBlocks.blocks.push_back(newDataBlockIdx);
+				setEntryInderectBlocks(_entry, inderectBlocks);
+			}
+			++_entry.blocksNum;
+			return true;
+		}
+		catch (std::exception&)
+		{
+
+		}
+	}
+	return false;
 }
 
 size_t fileSystemImpl::getFreeBlockIdx()
@@ -322,7 +533,7 @@ size_t fileSystemImpl::getPathDescriptorIdx(std::wstring _path)
 	return infos.size();
 }
 
-InfoDescriptor fileSystemImpl::getChildDescriptor(InfoDescriptor _parentDir, std::wstring _childName)
+InfoDescriptor fileSystemImpl::getChildDescriptor(InfoDescriptor& _parentDir, std::wstring _childName)
 {
 	if (fileSystemSource.is_open())
 	{
@@ -333,14 +544,14 @@ InfoDescriptor fileSystemImpl::getChildDescriptor(InfoDescriptor _parentDir, std
 	return InfoDescriptor();
 }
 
-size_t fileSystemImpl::getChildDescriptorIdx(InfoDescriptor _parentDir, std::wstring _childName)
+size_t fileSystemImpl::getChildDescriptorIdx(InfoDescriptor& _parentDir, std::wstring _childName)
 {
 	auto retValue = infos.size();
 	if ( _parentDir.entryType != EntryType::Directory)
 		return retValue;
 
 	std::vector<EntryData> content;
-	if (LoadFromStreamT(fileSystemSource, content, getBlockOffset(_parentDir.firstBlock)))
+	if (LoadFromStreamT(fileSystemSource, content, getBlockOffset(_parentDir.block_direct[0])))
 	{
 		auto result = std::find_if(content.begin(), content.end(), [&_childName](auto& info)
 		{
@@ -366,7 +577,12 @@ bool fileSystemImpl::removeDescriptorIdx(size_t _descIdx)
 			{
 				//mark as free infoblocks and datablocks
 				infoBlocks[_descIdx] = false;
-				dataBlocks[desc.firstBlock] = false;
+				for (const auto index : desc.block_direct)
+				{
+					dataBlocks[index] = false;
+				}
+				
+				dataBlocks[desc.block_indirect] = false;
 
 				//remove info from directory
 
@@ -382,25 +598,25 @@ bool fileSystemImpl::removeDescriptorIdx(size_t _descIdx)
 	return false;
 }
 
-bool fileSystemImpl::getDirectoryContent(InfoDescriptor _desc, std::vector<EntryData>& _content)
+bool fileSystemImpl::getDirectoryContent(InfoDescriptor& _desc, std::vector<EntryData>& _content)
 {
 	if (_desc.isValid()
 		&& _desc.entryType == EntryType::Directory
 		&& fileSystemSource.is_open())
 	{
-		return LoadFromStreamT(fileSystemSource, _content, getBlockOffset(_desc.firstBlock));
+		return LoadFromStreamT(fileSystemSource, _content, getBlockOffset(getEntryBlockIdx(_desc,0)));
 	}
 
 	return false;
 }
 
-bool fileSystemImpl::setDirectoryContent(InfoDescriptor _desc, std::vector<EntryData>& _content)
+bool fileSystemImpl::setDirectoryContent(InfoDescriptor& _desc, std::vector<EntryData>& _content)
 {
 	if (_desc.isValid()
 		&& _desc.entryType == EntryType::Directory
 		&& fileSystemSource.is_open())
 	{
-		return SaveToStreamT(fileSystemSource, _content, getBlockOffset(_desc.firstBlock));
+		return SaveToStreamT(fileSystemSource, _content, getBlockOffset(getEntryBlockIdx(_desc, 0)));
 	}
 
 	return false;

@@ -119,6 +119,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="EntryBlocks.h" />
     <ClInclude Include="EntryData.h" />
     <ClInclude Include="FileDescriptor.h" />
     <ClInclude Include="fileSystemImpl.h" />

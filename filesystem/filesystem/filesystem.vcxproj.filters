@@ -50,6 +50,9 @@
     <ClInclude Include="InfoDescriptor.h">
       <Filter>filesystemparts</Filter>
     </ClInclude>
+    <ClInclude Include="EntryBlocks.h">
+      <Filter>filesystemparts</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="portable_serialization">

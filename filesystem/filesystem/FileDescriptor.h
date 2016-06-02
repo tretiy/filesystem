@@ -1,5 +1,11 @@
 #pragma once
 struct FileDescriptor
 {
-	//TODO add some data here
+	size_t infoDescIdx;
+	size_t seekPos;
+
+	bool isValid()
+	{
+		return infoDescIdx > 0;
+	}
 };
