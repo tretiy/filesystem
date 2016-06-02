@@ -19,7 +19,7 @@ namespace FileSystemTests
 
 		TEST_METHOD(CreateFileSystem)
 		{
-			Assert::IsTrue(impl.CreateFileSystem("C:\\Projects\\newFilesys.txt", 512, 10000));
+			Assert::IsTrue(impl.createFileSystem("C:\\Projects\\newFilesys.txt", 512, 10000));
 			Assert::IsTrue(impl.createDirectory(L"/testDir"));
 			Assert::IsTrue(impl.createDirectory(L"/testDir/testDir1"));
 			Assert::IsTrue(impl.createDirectory(L"/testDir/testDir1/testDir2"));
@@ -27,10 +27,10 @@ namespace FileSystemTests
 			Assert::IsTrue(impl.exists(L"/testDir/testDir1/testDir2"));
 			Assert::IsTrue(impl.removeDirectory(L"/testDir/testDir1/testDir2"));
 			Assert::IsFalse(impl.exists(L"/testDir/testDir1/testDir2"));
-			Assert::IsTrue(impl.CloseFileSystem());
-			Assert::IsTrue(impl.OpenFileSystem("C:\\Projects\\newFilesys.txt"));
+			Assert::IsTrue(impl.closeFileSystem());
+			Assert::IsTrue(impl.openFileSystem("C:\\Projects\\newFilesys.txt"));
 			Assert::IsFalse(impl.getDirectoriesList(L"/").empty());
-			Assert::IsTrue(impl.CloseFileSystem());
+			Assert::IsTrue(impl.closeFileSystem());
 		}
 	};
 }

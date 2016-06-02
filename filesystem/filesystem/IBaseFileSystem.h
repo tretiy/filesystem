@@ -9,11 +9,11 @@ struct IBaseFileSystem
 	virtual bool removeDirectory(std::wstring _directoryPath) = 0;
 	virtual std::vector<std::wstring> getDirectoriesList(std::wstring _directoryPath) = 0;
 	virtual std::vector<std::wstring> getFilesList(std::wstring _directoryPath) = 0;
-	virtual FileDescriptor createFile(std::wstring _fullName) = 0;
-	virtual bool removeFile(std::wstring _fullName) = 0;
+	virtual bool createFile(std::wstring _filePath) = 0;
+	virtual bool removeFile(std::wstring _filePath) = 0;
 	virtual bool exists(std::wstring _path) = 0;
 	//file operations
-	virtual bool OpenFileSystem(std::string pathToFile, bool createNew = false) = 0;
-	virtual bool CloseFileSystem() = 0;
+	virtual bool openFileSystem(std::string _pathToFile, bool _createNew = false) = 0;
+	virtual bool closeFileSystem() = 0;
 };
 

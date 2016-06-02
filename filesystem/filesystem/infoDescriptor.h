@@ -12,7 +12,7 @@ namespace filesystem
 		template<class Archive>
 		void serialize(Archive & ar, const unsigned int version)
 		{
-			ar & fileType;
+			ar & entryType;
 			ar & flength;
 			ar & boost::serialization::make_binary_object(&lastAccess, sizeof(lastAccess));
 			ar & blocksNum;
@@ -20,7 +20,7 @@ namespace filesystem
 		}
 
 	public:
-		EntryType fileType = { EntryType::NotSet };						//File type 0 for Directory
+		EntryType entryType = { EntryType::NotSet };					//Entry type
 		short owner = { 0 };											//Owner identification
 		size_t flength = { 0 };											//File length in bytes
 		system_clock::time_point  lastAccess = system_clock::now();		//Time of last file access
@@ -33,7 +33,7 @@ namespace filesystem
 		};
 		bool isValid()
 		{
-			return blocksNum > 0;
+			return blocksNum > 0 && entryType != EntryType::NotSet;
 		}
 	};
 }
