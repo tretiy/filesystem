@@ -1,9 +1,10 @@
 #pragma once
 #include "IBaseFileSystem.h"
+#include "fstypes.h"
 #include "FileSystemHeader.h"
 #include "groupDescriptor.h"
 #include "infoDescriptor.h"
-#include "DirectoryInfo.h"
+#include "EntryData.h"
 #include <fstream>
 #include "boost\serialization\vector.hpp"
 using namespace filesystem;
@@ -15,7 +16,7 @@ class fileSystemImpl :public IBaseFileSystem
 	//groupDescriptor groupDesc;
 	std::vector<bool> dataBlocks;
 	std::vector<bool> infoBlocks;
-	std::vector<infoDescriptor> infos;
+	std::vector<InfoDescriptor> infos;
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version)
@@ -30,15 +31,15 @@ class fileSystemImpl :public IBaseFileSystem
 	std::streampos GetBlockOffset(size_t blockNum);
 	size_t getFreeBlockIdx();
 	size_t getFreeInfoIdx();
-	infoDescriptor getPathDescriptor(std::wstring _path);
+	InfoDescriptor getPathDescriptor(std::wstring _path);
 	size_t getPathDescriptorIdx(std::wstring _path);
-	infoDescriptor getDescriptor(infoDescriptor _parentDir, std::wstring _name);
-	size_t getDescriptorIdx(infoDescriptor _parentDir, std::wstring _name);
+	InfoDescriptor getDescriptor(InfoDescriptor _parentDir, std::wstring _name);
+	size_t getDescriptorIdx(InfoDescriptor _parentDir, std::wstring _name);
 	bool removeDescriptorIdx(size_t _descIdx);
-	bool getDirectoryContent(infoDescriptor _desc, std::vector<DirectoryInfo>& _content);
-	bool setDirectoryContent(infoDescriptor _desc, std::vector<DirectoryInfo>& _content);
+	bool getDirectoryContent(InfoDescriptor _desc, std::vector<EntryData>& _content);
+	bool setDirectoryContent(InfoDescriptor _desc, std::vector<EntryData>& _content);
 	std::vector<std::wstring> fileSystemImpl::getDirectoryContentList(std::wstring _directoryPath,
-		infoDescriptor::FileType _type = infoDescriptor::FileType::NotSet);
+		EntryType _type = EntryType::NotSet);
 
 public:
 	fileSystemImpl();

@@ -119,13 +119,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="DirectoryInfo.h" />
+    <ClInclude Include="EntryData.h" />
     <ClInclude Include="FileDescriptor.h" />
     <ClInclude Include="fileSystemImpl.h" />
     <ClInclude Include="fsserialization.h" />
+    <ClInclude Include="fstypes.h" />
     <ClInclude Include="groupDescriptor.h" />
     <ClInclude Include="IBaseFileSystem.h" />
-    <ClInclude Include="infoDescriptor.h" />
+    <ClInclude Include="InfoDescriptor.h" />
     <ClInclude Include="portable_serialization\portable_binary_archive.hpp" />
     <ClInclude Include="portable_serialization\portable_binary_iarchive.hpp" />
     <ClInclude Include="portable_serialization\portable_binary_oarchive.hpp" />

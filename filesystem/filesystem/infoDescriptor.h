@@ -6,7 +6,7 @@
 using namespace std::chrono;
 namespace filesystem
 {
-	class infoDescriptor
+	class InfoDescriptor
 	{
 		friend class boost::serialization::access;
 		template<class Archive>
@@ -20,19 +20,13 @@ namespace filesystem
 		}
 
 	public:
-		short fileType = { 0 };											//File type 0 for Directory
+		EntryType fileType = { EntryType::NotSet };						//File type 0 for Directory
 		short owner = { 0 };											//Owner identification
-		size_t flength = { 0 };									//File length in bytes
+		size_t flength = { 0 };											//File length in bytes
 		system_clock::time_point  lastAccess = system_clock::now();		//Time of last file access
-		size_t blocksNum = { 0 };								//Number of data blocks
-		size_t firstBlock = { 0 };								//First data block 
+		size_t blocksNum = { 0 };										//Number of data blocks
+		size_t firstBlock = { 0 };										//First data block 
 		/*14 more pointers to data blocks*/
-		enum FileType
-		{
-			NotSet = 0,
-			Directory,
-			RegularFile
-		};
 		void updateLastAccess()
 		{
 			lastAccess = system_clock::now();

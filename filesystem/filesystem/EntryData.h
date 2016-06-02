@@ -1,22 +1,26 @@
 #pragma once
+#include "fstypes.h"
 #include <string>
 #include "boost\serialization\access.hpp"
+
 namespace filesystem
 {
-	class DirectoryInfo
+	class EntryData
 	{
 		friend class boost::serialization::access;
 		template<class Archive>
 		void serialize(Archive & ar, const unsigned int version)
 		{
 			ar & infoIdx;
+			ar & type;
 			ar & name;
 		}
 	public:
-		size_t infoIdx;   //	Inode number
-		std::wstring  name;		//	Directory name
+		size_t infoIdx;			//Inode number
+		EntryType type;			//Entry type (directory or file)
+		std::wstring  name;		//Entry name
 
-		DirectoryInfo() = default;
-		~DirectoryInfo() = default;
+		EntryData() = default;
+		~EntryData() = default;
 	};
 }

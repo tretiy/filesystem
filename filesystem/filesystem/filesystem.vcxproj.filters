@@ -29,9 +29,6 @@
     <ClInclude Include="groupDescriptor.h">
       <Filter>filesystemparts</Filter>
     </ClInclude>
-    <ClInclude Include="infoDescriptor.h">
-      <Filter>filesystemparts</Filter>
-    </ClInclude>
     <ClInclude Include="FileDescriptor.h">
       <Filter>interfaces</Filter>
     </ClInclude>
@@ -41,10 +38,16 @@
     <ClInclude Include="FileSystemHeader.h">
       <Filter>filesystemparts</Filter>
     </ClInclude>
-    <ClInclude Include="DirectoryInfo.h">
+    <ClInclude Include="fsserialization.h">
       <Filter>filesystemparts</Filter>
     </ClInclude>
-    <ClInclude Include="fsserialization.h">
+    <ClInclude Include="fstypes.h">
+      <Filter>filesystemparts</Filter>
+    </ClInclude>
+    <ClInclude Include="EntryData.h">
+      <Filter>filesystemparts</Filter>
+    </ClInclude>
+    <ClInclude Include="InfoDescriptor.h">
       <Filter>filesystemparts</Filter>
     </ClInclude>
   </ItemGroup>
