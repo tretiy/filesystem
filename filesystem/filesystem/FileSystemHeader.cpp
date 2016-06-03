@@ -4,7 +4,7 @@
 namespace filesystem
 {
 	FileSystemHeader::FileSystemHeader()
-		:FileSystemHeader(256, 512, 1024)
+		:FileSystemHeader(0, 0, 0)
 	{
 	}
 
@@ -37,11 +37,8 @@ namespace filesystem
 	{
 		return dataOffset;
 	}
-
-	bool operator==(const FileSystemHeader& left, const FileSystemHeader& right)
+	bool FileSystemHeader::isValid()
 	{
-		return left.blockSize == right.blockSize &&
-			left.infosCount == right.infosCount &&
-			left.fileSystemSize == right.fileSystemSize;
+		return dataOffset > 0 && infosCount > 0 && blockSize > 0 && fileSystemSize > 0;
 	}
 }

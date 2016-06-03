@@ -13,6 +13,7 @@ using namespace filesystem;
 class fileSystemImpl :public IBaseFileSystem
 {
 	static const size_t MAX_ENTRYNAME_LENGTH = 255;
+	static const size_t MAX_FS_SIZE = 1024 * 1024 * 1024;
 	std::fstream fileSystemSource;
 	FileSystemHeader mainSector;
 	std::vector<bool> dataBlocks;
@@ -64,18 +65,17 @@ public:
 	virtual bool removeDirectory(const std::wstring& _directoryPath) override;
 	virtual std::vector<std::wstring> getDirectoriesList(const std::wstring& _directoryPath) override;
 	virtual bool exists(const std::wstring& _path) override;
-
+	// files operations
 	virtual std::vector<std::wstring> getFilesList(const std::wstring& _directoryPath) override;
 	virtual bool createFile(const std::wstring& _filePath) override;
 	virtual bool removeFile(const std::wstring& _filePath) override;
-
+	virtual FileDescriptor openFile(const std::wstring& _pathToFile, bool _seekToBegin = true) override;
+	virtual size_t writeToFile(FileDescriptor& _file, const char* _data, size_t _count) override;
+	virtual size_t readFromFile(FileDescriptor& _file, char* _data, size_t _count) override;
 
 	virtual bool openFileSystem(const std::wstring& _pathToFile, bool _createNew = false) override;
 	virtual bool closeFileSystem() override;
 
-	virtual FileDescriptor openFile(const std::wstring& _pathToFile, bool _seekToBegin = true) override;
-	virtual size_t writeToFile(FileDescriptor& _file, const char* _data, size_t _count) override;
-	virtual size_t readFromFile(FileDescriptor& _file, char* _data, size_t _count) override;
 	bool createFileSystem(const std::wstring& _pathToFile, size_t _blockSize, size_t _blocksCount);
 	bool initializeFileSystem();
 };

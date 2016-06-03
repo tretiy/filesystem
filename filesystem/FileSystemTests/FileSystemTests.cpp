@@ -17,33 +17,76 @@ namespace FileSystemTests
 	public:
 		
 		fileSystemImpl impl;
+		std::wstring fsPath = L"C:\\Projects\\newFilesys.txt";
 
-		TEST_METHOD(CreateFileSystem)
+		TEST_METHOD(CreateCloseFileSystem)
 		{
-			Assert::IsTrue(impl.createFileSystem(L"C:\\Projects\\newFilesys.txt", 512, 10000));
+			//check bound conditions 
+			Assert::IsFalse(impl.createFileSystem(L"", 512, 10000));
+			Assert::IsFalse(impl.createFileSystem(fsPath, 0, 10000));
+			Assert::IsFalse(impl.createFileSystem(fsPath, 512, 0));
+			//check greater than max size 
+			Assert::IsFalse(impl.createFileSystem(fsPath, 1024, 1024 * 1024 + 1));
+			//check max size
+			Assert::IsTrue(impl.createFileSystem(fsPath, 1024, 1024 * 1024));
+			//close			
+			Assert::IsTrue(impl.closeFileSystem());
+		}
 
-			Assert::IsTrue(impl.createDirectory(L"/testDir"));
-			Assert::IsTrue(impl.createDirectory(L"/testDir/testDir1"));
-			Assert::IsTrue(impl.createDirectory(L"/testDir/testDir1/testDir2"));
-
-			Assert::IsTrue(impl.exists(L"/testDir/testDir1"));
-			Assert::IsTrue(impl.exists(L"/testDir/testDir1/testDir2"));
-
-			Assert::IsTrue(impl.removeDirectory(L"/testDir/testDir1/testDir2"));
-
-			Assert::IsFalse(impl.exists(L"/testDir/testDir1/testDir2"));
-
+		TEST_METHOD(OpenCloseFileSystem)
+		{
+			//open previous fs
+			Assert::IsTrue(impl.openFileSystem(fsPath));
+			Assert::IsTrue(impl.initializeFileSystem());
 			Assert::IsTrue(impl.closeFileSystem());
 
-			Assert::IsTrue(impl.openFileSystem(L"C:\\Projects\\newFilesys.txt"));
+			//check that enpty file is not valid
+			Assert::IsTrue(impl.openFileSystem(fsPath, true));
+			Assert::IsFalse(impl.initializeFileSystem());
+			Assert::IsTrue(impl.closeFileSystem());
+		}
+
+		TEST_METHOD(DirectoryOperations)
+		{
+			//create fs first
+			Assert::IsTrue(impl.createFileSystem(fsPath, 1024, 10000));
+
+			//create dirs
+			Assert::IsTrue(impl.createDirectory(L"/fDir"));
+			Assert::IsTrue(impl.createDirectory(L"/fDir/sDir"));
+			Assert::IsTrue(impl.createDirectory(L"/fDir/sDir/tDir"));
+			//check if exists
+			Assert::IsTrue(impl.exists(L"/fDir"));
+			Assert::IsTrue(impl.exists(L"/fDir/sDir"));
+			Assert::IsTrue(impl.exists(L"/fDir/sDir/tDir"));
+			//can't create same directory
+			Assert::IsFalse(impl.createDirectory(L"/fDir/sDir"));
+			//check remove 
+			Assert::IsTrue(impl.removeDirectory(L"/fDir/sDir/tDir"));
+			Assert::IsFalse(impl.exists(L"/fDir/sDir/tDir"));
+
+			Assert::IsTrue(impl.closeFileSystem());
+			//check that directory structure is saved to disk
+			Assert::IsTrue(impl.openFileSystem(fsPath));
 			Assert::IsTrue(impl.initializeFileSystem());
 			Assert::IsFalse(impl.getDirectoriesList(L"/").empty());
-			Assert::IsTrue(impl.closeFileSystem());
+			Assert::IsFalse(impl.getDirectoriesList(L"/fDir").empty());
+
+			Assert::IsTrue(impl.removeDirectory(L"/fDir/sDir/"));
+			Assert::IsTrue(impl.removeDirectory(L"/fDir"));
+			// TODO add checks
+			// for max directories in directory
+			for (auto i = 0; i < 512; ++i)
+			{
+				std::wstring name = L"/dir" + 1;
+				Assert::IsTrue(impl.createDirectory(name));
+			}
+			Assert::IsFalse(impl.createDirectory(L"badDirectory"));
 		}
 
 		TEST_METHOD(FileOperations)
 		{
-			Assert::IsTrue(impl.openFileSystem(L"C:\\Projects\\newFilesys.txt"));
+			/*Assert::IsTrue(impl.openFileSystem(fsPath));
 			Assert::IsTrue(impl.initializeFileSystem());
 			Assert::IsTrue(impl.exists(L"/testDir/testDir1"));
 			Assert::IsTrue(impl.createFile(L"/testDir/testDir1/testFile.txt"));
@@ -59,17 +102,17 @@ namespace FileSystemTests
 			std::vector<char> readBuff(sizeToWrite, 'm');
 			file.seekPos = file.fileLength - 1;
 			Assert::IsTrue(impl.readFromFile(file, &readBuff[0], 1) == 1);
-			Assert::IsTrue(impl.closeFileSystem());
+			Assert::IsTrue(impl.closeFileSystem());*/
 		}
 
 		TEST_METHOD(CheckFile)
 		{
-			Assert::IsTrue(impl.openFileSystem(L"C:\\Projects\\newFilesys.txt"));
+			/*Assert::IsTrue(impl.openFileSystem(fsPath));
 			Assert::IsTrue(impl.initializeFileSystem());
 			Assert::IsTrue(impl.exists(L"/testDir/testDir1/testFile.txt"));
 			auto file = impl.openFile(L"/testDir/testDir1/testFile.txt"); 
 			Assert::IsTrue(file.isValid());
-			Assert::IsTrue(impl.closeFileSystem());
+			Assert::IsTrue(impl.closeFileSystem());*/
 		}
 	};
 }

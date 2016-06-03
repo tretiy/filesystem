@@ -125,11 +125,15 @@ bool fileSystemImpl::removeEntry(const std::wstring& _entryPath)
 	auto parentDesc = getPathDescriptor(parentPath);
 	std::vector<EntryData> parentContent;
 	getDirectoryContent(parentDesc, parentContent);
-	std::remove_if(parentContent.begin(), parentContent.end(), [&pathDescIdx](auto& elem)
+	auto iter = std::remove_if(parentContent.begin(), parentContent.end(), [&pathDescIdx](auto& elem)
 	{
 		return elem.infoIdx == pathDescIdx;
 	});
-	setDirectoryContent(parentDesc, parentContent);
+	if (iter != parentContent.end())
+	{
+		parentContent.erase(iter, parentContent.end());
+		setDirectoryContent(parentDesc, parentContent);
+	}
 	//remove dir information
 	for (const auto& index : infos[pathDescIdx].block_direct)
 	{
@@ -204,12 +208,14 @@ bool fileSystemImpl::openFileSystem(const std::wstring& _pathToFile, bool _creat
 {
 	if (_pathToFile.empty())
 		return false;
+
 	auto openMode = std::ios::binary | std::ios::in | std::ios::out;
 	if (_createNew)
 		openMode |= std::ios::trunc;
+
 	fileSystemSource.open(_pathToFile, openMode);
-	auto retVal = fileSystemSource.is_open();
-	return retVal;
+
+	return fileSystemSource.is_open();
 }
 
 bool fileSystemImpl::closeFileSystem()
@@ -218,10 +224,15 @@ bool fileSystemImpl::closeFileSystem()
 	{
 		try
 		{
-			SaveToStreamT(fileSystemSource, *this, std::streampos(0));
+			if (mainSector.isValid())
+			{
+				SaveToStreamT(fileSystemSource, *this, std::streampos(0));
+			}
+			mainSector = FileSystemHeader();
 		}
 		catch (const std::exception&)
 		{
+			fileSystemSource.close();
 			return false;
 		}
 		fileSystemSource.close();
@@ -328,7 +339,7 @@ size_t fileSystemImpl::readFromFile(FileDescriptor & _file, char * _data, size_t
 
 bool fileSystemImpl::createFileSystem(const std::wstring& _pathToFile, size_t _blockSize, size_t _blocksCount)
 {
-	if (fileSystemSource.is_open())
+	if (fileSystemSource.is_open() || _blockSize == 0 || _blocksCount == 0 || _blockSize * _blocksCount > MAX_FS_SIZE)
 	{
 		return false;
 	}
@@ -343,7 +354,7 @@ bool fileSystemImpl::createFileSystem(const std::wstring& _pathToFile, size_t _b
 		infos[0].block_direct[0] = 0;
 		infos[0].entryType = EntryType::Directory;
 		infoBlocks.insert(infoBlocks.begin(), 512, false);
-		dataBlocks.insert(dataBlocks.begin(), mainSector.getBlockSize(), false);
+		dataBlocks.insert(dataBlocks.begin(), mainSector.getFileSystemSize(), false);
 		infoBlocks[0] = true;
 		dataBlocks[0] = true;
 
@@ -363,6 +374,7 @@ bool fileSystemImpl::createFileSystem(const std::wstring& _pathToFile, size_t _b
 		}
 		catch (const std::exception&)
 		{
+			closeFileSystem();
 			return false;
 		}
 		return true;
@@ -550,7 +562,10 @@ size_t fileSystemImpl::getPathDescriptorIdx(const std::wstring& _path)
 		std::vector<std::wstring> directories;
 		while (temp.has_parent_path())
 		{
-			directories.push_back(temp.filename().native());
+			if (temp.filename() != fs::path("."))
+			{
+				directories.push_back(temp.filename().native());
+			}
 			temp = temp.parent_path();
 		}
 		auto dirsIter = directories.rbegin();
