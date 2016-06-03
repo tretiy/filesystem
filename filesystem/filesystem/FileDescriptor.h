@@ -3,9 +3,9 @@ struct FileDescriptor
 {
 	size_t infoDescIdx;
 	size_t seekPos;
-
-	bool isValid()
+	size_t fileLength;
+	bool isValid() 
 	{
-		return infoDescIdx > 0;
+		return infoDescIdx > 0 && seekPos <= fileLength;
 	}
 };

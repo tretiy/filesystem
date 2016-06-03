@@ -134,8 +134,8 @@
     <ClInclude Include="FileSystemHeader.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FileDescriptor.cpp" />
     <ClCompile Include="fileSystemImpl.cpp" />
-    <ClCompile Include="groupDescriptor.cpp" />
     <ClCompile Include="portable_serialization\portable_binary_iarchive.cpp" />
     <ClCompile Include="portable_serialization\portable_binary_oarchive.cpp" />
     <ClCompile Include="FileSystemHeader.cpp" />

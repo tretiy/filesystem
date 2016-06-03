@@ -8,12 +8,10 @@
     <ClCompile Include="portable_serialization\portable_binary_oarchive.cpp">
       <Filter>portable_serialization</Filter>
     </ClCompile>
-    <ClCompile Include="groupDescriptor.cpp">
-      <Filter>filesystemparts</Filter>
-    </ClCompile>
     <ClCompile Include="FileSystemHeader.cpp">
       <Filter>filesystemparts</Filter>
     </ClCompile>
+    <ClCompile Include="FileDescriptor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fileSystemImpl.h" />

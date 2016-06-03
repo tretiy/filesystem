@@ -22,10 +22,6 @@ namespace filesystem
 			ar & isDirectory;
 			ar & entryName;
 		}
-	public:
-		groupDescriptor();
-		groupDescriptor(unsigned int _infoNumber, std::string& _entryName, bool _isDirectory);
-		~groupDescriptor();
 	};
 }
 

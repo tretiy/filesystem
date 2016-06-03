@@ -15,22 +15,22 @@ fileSystemImpl::~fileSystemImpl()
 
 }
 
-bool fileSystemImpl::createDirectory(std::wstring _directoryPath)
+bool fileSystemImpl::createDirectory(const std::wstring& _directoryPath)
 {
 	return createEntry(_directoryPath, EntryType::Directory);
 }
 
-bool fileSystemImpl::createFile(std::wstring _filePath)
+bool fileSystemImpl::createFile(const std::wstring& _filePath)
 {
 	return createEntry(_filePath, EntryType::RegularFile);
 }
 
-bool fileSystemImpl::removeDirectory(std::wstring _directoryPath)
+bool fileSystemImpl::removeDirectory(const std::wstring& _directoryPath)
 {
 	return removeEntry(_directoryPath);
 }
 
-std::vector<std::wstring> fileSystemImpl::getDirectoryContentList(std::wstring _directoryPath,
+std::vector<std::wstring> fileSystemImpl::getDirectoryContentList(const std::wstring& _directoryPath,
 	EntryType _type /*= EntryType::NotSet*/)
 {
 	std::vector<EntryData> content;
@@ -48,7 +48,7 @@ std::vector<std::wstring> fileSystemImpl::getDirectoryContentList(std::wstring _
 	return contentNames;
 }
 
-bool fileSystemImpl::createEntry(std::wstring _entryPath, EntryType _type)
+bool fileSystemImpl::createEntry(const std::wstring& _entryPath, EntryType _type)
 {
 	fs::path newPath(_entryPath);
 	//check if directory already exists
@@ -99,7 +99,7 @@ bool fileSystemImpl::createEntry(std::wstring _entryPath, EntryType _type)
 	return false;
 }
 
-bool fileSystemImpl::removeEntry(std::wstring _entryPath)
+bool fileSystemImpl::removeEntry(const std::wstring& _entryPath)
 {
 	auto pathDescIdx = getPathDescriptorIdx(_entryPath);
 	if (pathDescIdx == infos.size() || pathDescIdx == 0) // do not allow to remove root dir
@@ -150,7 +150,7 @@ bool fileSystemImpl::removeEntry(std::wstring _entryPath)
 	return true;
 }
 
-bool fileSystemImpl::renameEntry(std::wstring _entryPath, std::wstring _newName)
+bool fileSystemImpl::renameEntry(const std::wstring& _entryPath, const std::wstring& _newName)
 {
 	auto pathDescIdx = getPathDescriptorIdx(_entryPath);
 	if (!checkEntryName(_newName) || pathDescIdx == infos.size() || pathDescIdx == 0) // do not allow to rename root dir
@@ -175,32 +175,32 @@ bool fileSystemImpl::renameEntry(std::wstring _entryPath, std::wstring _newName)
 	return true;
 }
 
-bool fileSystemImpl::checkEntryName(std::wstring _entryName)
+bool fileSystemImpl::checkEntryName(const std::wstring& _entryName)
 {
 	return !_entryName.empty() && _entryName.length() < MAX_ENTRYNAME_LENGTH;
 }
 
-std::vector<std::wstring> fileSystemImpl::getDirectoriesList(std::wstring _directoryPath)
+std::vector<std::wstring> fileSystemImpl::getDirectoriesList(const std::wstring& _directoryPath)
 {
 	return getDirectoryContentList(_directoryPath, EntryType::Directory);
 }
 
-std::vector<std::wstring> fileSystemImpl::getFilesList(std::wstring _directoryPath)
+std::vector<std::wstring> fileSystemImpl::getFilesList(const std::wstring& _directoryPath)
 {
 	return getDirectoryContentList(_directoryPath, EntryType::RegularFile);
 }
 
-bool fileSystemImpl::removeFile(std::wstring _fullName)
+bool fileSystemImpl::removeFile(const std::wstring& _fullName)
 {
 	return removeEntry(_fullName);
 }
 
-bool fileSystemImpl::exists(std::wstring _path)
+bool fileSystemImpl::exists(const std::wstring& _path)
 {
 	return getPathDescriptor(_path).isValid();
 }
 
-bool fileSystemImpl::openFileSystem(std::string _pathToFile, bool _createNew/* = false*/)
+bool fileSystemImpl::openFileSystem(const std::wstring& _pathToFile, bool _createNew/* = false*/)
 {
 	if (_pathToFile.empty())
 		return false;
@@ -230,13 +230,16 @@ bool fileSystemImpl::closeFileSystem()
 	return false;
 }
 
-FileDescriptor fileSystemImpl::openFile(std::wstring _pathToFile)
+FileDescriptor fileSystemImpl::openFile(const std::wstring& _pathToFile, bool _seekToBegin/*=true*/)
 {
 	auto file = FileDescriptor();
 	auto infoIdx = getPathDescriptorIdx(_pathToFile);
 	if (infoIdx != infos.size() && infos[infoIdx].entryType == EntryType::RegularFile)
 	{
 		file.infoDescIdx = infoIdx;
+		file.fileLength = infos[infoIdx].flength;
+		if (!_seekToBegin)
+			file.seekPos = file.fileLength;
 	}
 	return file;
 }
@@ -246,7 +249,7 @@ size_t fileSystemImpl::writeToFile(FileDescriptor & _file, const char * _data, s
 	//check descriptor
 	if (_file.infoDescIdx < infos.size() && infos[_file.infoDescIdx].entryType == EntryType::RegularFile && _count > 0)
 	{
-		auto& fileInfoDesc = infos[_file.infoDescIdx]; //TODO add reference
+		auto& fileInfoDesc = infos[_file.infoDescIdx];
 		//file seek pos should be not greater than current file length
 		if (_file.seekPos <= fileInfoDesc.flength)
 		{
@@ -279,7 +282,11 @@ size_t fileSystemImpl::writeToFile(FileDescriptor & _file, const char * _data, s
 			}
 			//update file lenght in case we add some data to end of file
 			if (_file.seekPos > fileInfoDesc.flength)
+			{
 				fileInfoDesc.flength = _file.seekPos;
+				_file.fileLength = _file.seekPos;
+			}
+			
 			SaveToStreamT(fileSystemSource, *this, std::streampos(0));
 			return writedCount;
 		}
@@ -287,7 +294,39 @@ size_t fileSystemImpl::writeToFile(FileDescriptor & _file, const char * _data, s
 	return size_t(0);
 }
 
-bool fileSystemImpl::createFileSystem(std::string _pathToFile, size_t _blockSize, size_t _blocksCount)
+size_t fileSystemImpl::readFromFile(FileDescriptor & _file, char * _data, size_t _count)
+{
+	if (_file.infoDescIdx < infos.size() && infos[_file.infoDescIdx].entryType == EntryType::RegularFile && _count > 0)
+	{
+		auto& fileInfoDesc = infos[_file.infoDescIdx];
+		if (_file.seekPos <= fileInfoDesc.flength)
+		{
+			decltype(_count) readedCount = { 0 };
+			while (readedCount != _count)
+			{
+				auto seekPosInBlock = getFileOffset(_file);
+				if (seekPosInBlock == std::streampos(0))
+				{
+					break;
+				}
+				auto maxlentowrite = getLengthToWrite(_file); //get max avaible data in this block 
+				auto countToRead = maxlentowrite <= _count - readedCount ? maxlentowrite : _count - readedCount;
+				fileSystemSource.seekp(seekPosInBlock);
+				fileSystemSource.read(&_data[readedCount], countToRead);
+				if (!fileSystemSource.good())
+				{
+					break;
+				}
+				readedCount += countToRead;
+				_file.seekPos += countToRead;
+			}
+			return readedCount;
+		}
+	}
+	return size_t{ 0 };
+}
+
+bool fileSystemImpl::createFileSystem(const std::wstring& _pathToFile, size_t _blockSize, size_t _blocksCount)
 {
 	if (fileSystemSource.is_open())
 	{
@@ -492,7 +531,7 @@ size_t fileSystemImpl::getFreeInfoIdx()
 	throw std::exception("filesystem is full, not enought info blocks");
 }
 
-InfoDescriptor fileSystemImpl::getPathDescriptor(std::wstring _path)
+InfoDescriptor fileSystemImpl::getPathDescriptor(const std::wstring& _path)
 {
 	auto idx = getPathDescriptorIdx(_path);
 	if (idx != infos.size())
@@ -501,7 +540,7 @@ InfoDescriptor fileSystemImpl::getPathDescriptor(std::wstring _path)
 	return InfoDescriptor();
 }
 
-size_t fileSystemImpl::getPathDescriptorIdx(std::wstring _path)
+size_t fileSystemImpl::getPathDescriptorIdx(const std::wstring& _path)
 {
 	fs::path pathTofile(_path);
 	if (pathTofile.has_root_path() && pathTofile.root_path() == "/") //check is valid 
@@ -533,7 +572,7 @@ size_t fileSystemImpl::getPathDescriptorIdx(std::wstring _path)
 	return infos.size();
 }
 
-InfoDescriptor fileSystemImpl::getChildDescriptor(InfoDescriptor& _parentDir, std::wstring _childName)
+InfoDescriptor fileSystemImpl::getChildDescriptor(InfoDescriptor& _parentDir, const std::wstring& _childName)
 {
 	if (fileSystemSource.is_open())
 	{
@@ -544,7 +583,7 @@ InfoDescriptor fileSystemImpl::getChildDescriptor(InfoDescriptor& _parentDir, st
 	return InfoDescriptor();
 }
 
-size_t fileSystemImpl::getChildDescriptorIdx(InfoDescriptor& _parentDir, std::wstring _childName)
+size_t fileSystemImpl::getChildDescriptorIdx(InfoDescriptor& _parentDir, const std::wstring& _childName)
 {
 	auto retValue = infos.size();
 	if ( _parentDir.entryType != EntryType::Directory)
