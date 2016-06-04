@@ -49,3 +49,9 @@
 /filesystem/FileSystemTests/x64/Release
 /filesystem/Release
 /filesystem/x64/Release
+/filesystem/ComFileSystemClient/Debug
+/filesystem/ComFileSystemClient/Release
+/filesystem/ComFileSystemClient/x64
+/filesystem/ComFileSystemServer/Debug
+/filesystem/ComFileSystemServer/Release
+/filesystem/ComFileSystemServer/x64

@@ -1,0 +1,5 @@
+LIBRARY      "ComFileSystemServer"
+
+EXPORTS
+    DllGetClassObject   PRIVATE
+    DllCanUnloadNow     PRIVATE

@@ -76,9 +76,9 @@ namespace FileSystemTests
 			Assert::IsTrue(impl.removeDirectory(L"/fDir"));
 			// TODO add checks
 			// for max directories in directory
-			for (auto i = 0; i < 512; ++i)
+			for (auto i = 0; i < 511; ++i)
 			{
-				std::wstring name = L"/dir" + 1;
+				std::wstring name = L"/dir" + std::to_wstring(i);
 				Assert::IsTrue(impl.createDirectory(name));
 			}
 			Assert::IsFalse(impl.createDirectory(L"badDirectory"));
@@ -86,33 +86,22 @@ namespace FileSystemTests
 
 		TEST_METHOD(FileOperations)
 		{
-			/*Assert::IsTrue(impl.openFileSystem(fsPath));
-			Assert::IsTrue(impl.initializeFileSystem());
-			Assert::IsTrue(impl.exists(L"/testDir/testDir1"));
-			Assert::IsTrue(impl.createFile(L"/testDir/testDir1/testFile.txt"));
-			Assert::IsTrue(impl.exists(L"/testDir/testDir1/testFile.txt"));
+			//create fs first
+			Assert::IsTrue(impl.createFileSystem(fsPath, 1024, 500));
+			Assert::IsTrue(impl.createFile(L"/testFile.txt"));
+			Assert::IsTrue(impl.exists(L"/testFile.txt"));
 
 			auto sizeToWrite = 512 * 5 + 1; 
 			std::vector<char> buffer(sizeToWrite, 'l');
 			buffer[0] = 's';
 			buffer[sizeToWrite - 1] = 's';
-			auto file = impl.openFile(L"/testDir/testDir1/testFile.txt");
+			auto file = impl.openFile(L"/testFile.txt");
 			Assert::IsTrue(file.isValid());
 			Assert::IsTrue(impl.writeToFile(file, &buffer[0], sizeToWrite) == sizeToWrite);
 			std::vector<char> readBuff(sizeToWrite, 'm');
 			file.seekPos = file.fileLength - 1;
 			Assert::IsTrue(impl.readFromFile(file, &readBuff[0], 1) == 1);
-			Assert::IsTrue(impl.closeFileSystem());*/
-		}
-
-		TEST_METHOD(CheckFile)
-		{
-			/*Assert::IsTrue(impl.openFileSystem(fsPath));
-			Assert::IsTrue(impl.initializeFileSystem());
-			Assert::IsTrue(impl.exists(L"/testDir/testDir1/testFile.txt"));
-			auto file = impl.openFile(L"/testDir/testDir1/testFile.txt"); 
-			Assert::IsTrue(file.isValid());
-			Assert::IsTrue(impl.closeFileSystem());*/
+			Assert::IsTrue(impl.closeFileSystem());
 		}
 	};
 }

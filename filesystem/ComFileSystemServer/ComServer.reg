@@ -1,0 +1,10 @@
+REGEDIT
+HKEY_CLASSES_ROOT\FileSystem.Component.1 = Filesystem in file component
+HKEY_CLASSES_ROOT\FileSystem.Component.1\CurVer = FileSystem.Component.1
+HKEY_CLASSES_ROOT\FileSystem.Component.1\CLSID = {A888F560-58E4-11d0-A68A-0000837E3100}
+
+HKEY_CLASSES_ROOT\CLSID\{A888F560-58E4-11d0-A68A-0000837E3100} = Filesystem in file component
+HKEY_CLASSES_ROOT\CLSID\{A888F560-58E4-11d0-A68A-0000837E3100}\ProgID = FileSystem.Component.1
+HKEY_CLASSES_ROOT\CLSID\{A888F560-58E4-11d0-A68A-0000837E3100}\VersionIndependentProgID = FileSystem.Component
+HKEY_CLASSES_ROOT\CLSID\{A888F560-58E4-11d0-A68A-0000837E3100}\InprocServer32 = C:\Users\DTretyakov\Source\Repos\filesystem\filesystem\x64\Debug\ComFileSystemServer.dll
+HKEY_CLASSES_ROOT\CLSID\{A888F560-58E4-11d0-A68A-0000837E3100}\NotInsertable

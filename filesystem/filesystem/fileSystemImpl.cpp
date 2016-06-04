@@ -122,6 +122,8 @@ bool fileSystemImpl::removeEntry(const std::wstring& _entryPath)
 	//update parent dir content
 	fs::path dirPath(_entryPath);
 	auto parentPath = dirPath.parent_path();
+	if (dirPath.filename().native() == L".")
+		parentPath = parentPath.parent_path();
 	auto parentDesc = getPathDescriptor(parentPath);
 	std::vector<EntryData> parentContent;
 	getDirectoryContent(parentDesc, parentContent);
