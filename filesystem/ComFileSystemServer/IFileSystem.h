@@ -21,8 +21,9 @@ public:
 	STDMETHOD(exists(BSTR _path)) PURE;
 	STDMETHOD(openFile(BSTR _pathToFile, bool _seekToBegin, size_t* _fileIdx, size_t* _position)) PURE;
 	STDMETHOD_(size_t, writeToFile(size_t _fileIdx, size_t* _position, VARIANT* _data, size_t _count)) PURE;
-	STDMETHOD_(size_t, readFromFile(size_t _fileIdx, size_t* _position, VARIANT* _data, size_t _count)) PURE;
+	STDMETHOD_(size_t, readFromFile(size_t _fileIdx, size_t* _position, VARIANT& _data, size_t _count)) PURE;
 	//file operations
 	STDMETHOD(openFileSystem(BSTR _pathToFile, bool _createNew)) PURE;
+	STDMETHOD(createFileSystem(BSTR _pathToFile, size_t _blockSize, size_t _blocksCount)) PURE;
 	STDMETHOD(closeFileSystem()) PURE;
 };

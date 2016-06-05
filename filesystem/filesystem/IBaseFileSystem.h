@@ -17,6 +17,7 @@ struct IBaseFileSystem
 	virtual size_t readFromFile(FileDescriptor& _file, char* _data, size_t _count) = 0;
 	//file operations
 	virtual bool openFileSystem(const std::wstring& _pathToFile, bool _createNew = false) = 0;
+	virtual bool createFileSystem(const std::wstring& _pathToFile, size_t _blockSize, size_t _blocksCount) = 0;
 	virtual bool closeFileSystem() = 0;
 };
 

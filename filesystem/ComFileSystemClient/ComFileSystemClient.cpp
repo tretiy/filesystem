@@ -4,6 +4,7 @@
 
 #include <initguid.h>
 #include "..\ComFileSystemServer\IFileSystem.h"
+#include "..\ComFileSystemServer\AutomationHelpers.h"
 
 using namespace std;
 
@@ -37,7 +38,7 @@ int main(int argc, char *argv[])
 	}
 
 	IClassFactory* pCF;
-	// Получить фабрику классов для класса Math
+	// get a classfactory
 	hr = CoGetClassObject(clsid,
 		CLSCTX_INPROC,
 		NULL,
@@ -50,8 +51,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	// с помощью фабрики классов создать экземпляр
-	// компонента и получить интерфейс IUnknown.
+	// get IUnknown iface
 	IUnknown* pUnk;
 	hr = pCF->CreateInstance(NULL, IID_IUnknown, (void**)&pUnk);
 
@@ -78,8 +78,37 @@ int main(int argc, char *argv[])
 
 	//check bstr
 	//SAFEARRAY* retVal = pFileSystem->TESTBSTR();
+	BSTR bstrPath = SysAllocString(L"C:\\Projects\\comFS");
+	auto ret = false;
+	ret = SUCCEEDED(pFileSystem->createFileSystem(bstrPath, 512, 20000));
+	SysFreeString(bstrPath);
+	bstrPath = SysAllocString(L"/comDir");
+	ret = SUCCEEDED(pFileSystem->createDirectory(bstrPath));
+	SysFreeString(bstrPath);
+	bstrPath = SysAllocString(L"/comDir2");
+	ret = SUCCEEDED(pFileSystem->createDirectory(bstrPath));
+	SysFreeString(bstrPath);
+	bstrPath = SysAllocString(L"/");
+	auto list = pFileSystem->getDirectoriesList(bstrPath);
+	SysFreeString(bstrPath);
+	bstrPath = SysAllocString(L"/comDir2/testFile.txt");
+	ret = SUCCEEDED(pFileSystem->createFile(bstrPath));
+	size_t fileDesc{ 0 };
+	size_t filePos{ 0 };
+	ret = SUCCEEDED(pFileSystem->openFile(bstrPath, true, &fileDesc, &filePos));
 	
-
+	auto buffSize{ 1025 };
+	std::vector<char> bytes(buffSize, 'm');
+	bytes[0] = 'a';
+	bytes[buffSize - 1] = 'a';
+	VARIANT* data = makeByteVariant(bytes);
+	auto writed = pFileSystem->writeToFile(fileDesc, &filePos, data, buffSize);
+	VariantClear(data);
+	filePos = 0;
+	VariantInit(data);
+	auto readed = pFileSystem->readFromFile(fileDesc, &filePos, *data, buffSize);
+	SysFreeString(bstrPath);
+	pFileSystem->closeFileSystem();
 	cout << "Releasing instance" << endl;
 	pFileSystem->Release();
 

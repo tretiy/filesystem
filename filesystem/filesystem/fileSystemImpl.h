@@ -78,7 +78,7 @@ public:
 	virtual bool openFileSystem(const std::wstring& _pathToFile, bool _createNew = false) override;
 	virtual bool closeFileSystem() override;
 
-	bool createFileSystem(const std::wstring& _pathToFile, size_t _blockSize, size_t _blocksCount);
+	virtual bool createFileSystem(const std::wstring& _pathToFile, size_t _blockSize, size_t _blocksCount) override;
 	bool initializeFileSystem();
 };
 

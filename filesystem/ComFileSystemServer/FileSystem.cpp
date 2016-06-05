@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <string>
 #include "FileSystem.h"
-
+#include "AutomationHelpers.h"
 //
 // FileSystem class implementation
 //
@@ -10,14 +10,12 @@ FileSystem::FileSystem()
 {
 	m_lRef = 0;
 
-	// ”величить значение внешнего счетчика объектов
 	InterlockedIncrement(&g_lObjs);
 }
 
 // The destructor
 FileSystem::~FileSystem()
 {
-	// ”меньшить значение внешнего счетчика объектов
 	InterlockedDecrement(&g_lObjs);
 }
 
@@ -50,74 +48,6 @@ STDMETHODIMP_(ULONG) FileSystem::Release()
 	}
 
 	return m_lRef;
-}
-
-SAFEARRAY* FileSystem::makeBSTRarray(std::vector<std::wstring>& _strings)
-{
-	if (_strings.empty())
-		return nullptr;
-
-	SAFEARRAYBOUND bounds[] = { { (ULONG)_strings.size(), 0 } }; //Array Contains 2 Elements starting from Index С0Т 
-
-	SAFEARRAY* stringsBSTR = SafeArrayCreate(VT_VARIANT, 1, bounds); //Create a one-dimensional SafeArray of variants
-	long*  lIndex = new long[_strings.size()];
-	for (const auto& value : _strings)
-	{
-		VARIANT var;
-		*lIndex = 0; // index of the element being inserted in the array
-		var.vt = VT_BSTR; // type of the element being inserted 
-		var.bstrVal = SysAllocStringLen(value.data(), (UINT)value.size());
-		HRESULT hr = SafeArrayPutElement(stringsBSTR, lIndex, &var); // insert the element 
-		std::advance(lIndex, 1);
-	}
-	
-	return stringsBSTR;
-}
-
-VARIANT* FileSystem::makeByteVariant(std::vector<char>& _bytes)
-{
-	SAFEARRAY FAR*  psarray;
-	SAFEARRAYBOUND sabounds[1];
-
-	sabounds[0].lLbound = 0;
-	sabounds[0].cElements = (ULONG)_bytes.size();
-
-	long nLbound;
-
-	psarray = SafeArrayCreate(VT_UI1, 1, sabounds);
-	if (psarray == NULL)
-		return nullptr;
-
-	for (nLbound = 0; nLbound < (long)sabounds[0].cElements; nLbound++) {
-		if (FAILED(SafeArrayPutElement(psarray, &nLbound, &_bytes[nLbound]))) {
-			SafeArrayDestroy(psarray);
-			return nullptr;
-		}
-	}
-	VARIANT* vtResult = new VARIANT();
-	vtResult->vt = VT_ARRAY | VT_UI1;
-	vtResult->parray = psarray;
-	return vtResult;
-}
-
-std::vector<char>* FileSystem::makeByteArray(VARIANT* _bytes)
-{
-	if (_bytes->vt != (VT_ARRAY | VT_UI1))
-		return nullptr;
-
-	auto arraySize = _bytes->parray->rgsabound[0].cElements;
-	auto retVec = new std::vector<char>(arraySize);
-	long nLbound;
-	for (nLbound = 0; nLbound < (long)_bytes->parray->rgsabound[0].cElements; nLbound++)
-	{
-		if (FAILED(SafeArrayGetElement(_bytes->parray, &nLbound, &retVec[nLbound]))) 
-		{
-			delete retVec;
-			return nullptr;
-		}
-	}
-
-	return retVec;
 }
 
 //filesystem operations
@@ -250,7 +180,7 @@ STDMETHODIMP_(size_t) FileSystem::writeToFile(size_t _fileIdx, size_t* _position
 	return size_t{ 0 };
 }
 
-STDMETHODIMP_(size_t) FileSystem::readFromFile(size_t _fileIdx, size_t* _position, VARIANT* _data, size_t _count)
+STDMETHODIMP_(size_t) FileSystem::readFromFile(size_t _fileIdx, size_t* _position, VARIANT& _data, size_t _count)
 {
 	if (_fileIdx > 0)
 	{
@@ -261,7 +191,8 @@ STDMETHODIMP_(size_t) FileSystem::readFromFile(size_t _fileIdx, size_t* _positio
 		fDesc.seekPos = *_position;
 		auto readed = fsImpl.readFromFile(fDesc, &bytes[0], _count);
 		*_position = fDesc.seekPos;
-		_data = makeByteVariant(bytes);
+		auto varArray = makeByteVariant(bytes);
+		_data = *varArray;
 		return readed;
 	}
 
@@ -274,6 +205,19 @@ STDMETHODIMP FileSystem::openFileSystem(BSTR _pathToFile, bool _createNew)
 	{
 		std::wstring path(_pathToFile, SysStringLen(_pathToFile));
 		if (fsImpl.openFileSystem(path, _createNew))
+		{
+			return S_OK;
+		}
+	}
+	return E_FAIL;
+}
+
+STDMETHODIMP FileSystem::createFileSystem(BSTR _pathToFile, size_t _blockSize, size_t _blocksCount)
+{
+	if (_pathToFile != nullptr)
+	{
+		std::wstring path(_pathToFile, SysStringLen(_pathToFile));
+		if (fsImpl.createFileSystem(path, _blockSize, _blocksCount))
 		{
 			return S_OK;
 		}
