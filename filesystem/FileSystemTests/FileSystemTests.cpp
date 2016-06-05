@@ -72,7 +72,9 @@ namespace FileSystemTests
 			Assert::IsFalse(impl.getDirectoriesList(L"/").empty());
 			Assert::IsFalse(impl.getDirectoriesList(L"/fDir").empty());
 
-			Assert::IsTrue(impl.removeDirectory(L"/fDir/sDir/"));
+			Assert::IsTrue(impl.renameEntry(L"/fDir/sDir", L"newname"));
+			Assert::IsFalse(impl.removeDirectory(L"/fDir/sDir/"));
+			Assert::IsTrue(impl.removeDirectory(L"/fDir/newname/"));
 			Assert::IsTrue(impl.removeDirectory(L"/fDir"));
 			// TODO add checks
 			// for max directories in directory

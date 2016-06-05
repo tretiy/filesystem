@@ -199,6 +199,20 @@ STDMETHODIMP_(size_t) FileSystem::readFromFile(size_t _fileIdx, size_t* _positio
 	return size_t{ 0 };
 }
 //file operations
+STDMETHODIMP FileSystem::rename(BSTR _pathTo, BSTR _newName)
+{
+	if (_pathTo != nullptr && _newName != nullptr)
+	{
+		std::wstring pathTo(_pathTo, SysStringLen(_pathTo));
+		std::wstring newName(_newName, SysStringLen(_newName));
+		if (fsImpl.renameEntry(pathTo, newName))
+		{
+			return S_OK;
+		}
+	}
+	return E_FAIL;
+}
+
 STDMETHODIMP FileSystem::openFileSystem(BSTR _pathToFile, bool _createNew)
 {
 	if (_pathToFile != nullptr)

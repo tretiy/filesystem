@@ -54,7 +54,6 @@ class fileSystemImpl :public IBaseFileSystem
 		EntryType _type = EntryType::NotSet);
 	bool createEntry(const std::wstring& _entryPath, EntryType _type);
 	bool removeEntry(const std::wstring& _entryPath);
-	bool renameEntry(const std::wstring& _entryPath, const std::wstring& _newName);
 	bool checkEntryName(const std::wstring& _entryName);
 
 public:
@@ -74,6 +73,8 @@ public:
 	virtual FileDescriptor openFile(const std::wstring& _pathToFile, bool _seekToBegin = true) override;
 	virtual size_t writeToFile(FileDescriptor& _file, const char* _data, size_t _count) override;
 	virtual size_t readFromFile(FileDescriptor& _file, char* _data, size_t _count) override;
+
+	virtual bool renameEntry(const std::wstring& _entryPath, const std::wstring& _newName) override;
 
 	virtual bool openFileSystem(const std::wstring& _pathToFile, bool _createNew = false) override;
 	virtual bool closeFileSystem() override;

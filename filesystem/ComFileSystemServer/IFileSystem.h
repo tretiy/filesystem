@@ -23,6 +23,7 @@ public:
 	STDMETHOD_(size_t, writeToFile(size_t _fileIdx, size_t* _position, VARIANT* _data, size_t _count)) PURE;
 	STDMETHOD_(size_t, readFromFile(size_t _fileIdx, size_t* _position, VARIANT& _data, size_t _count)) PURE;
 	//file operations
+	STDMETHOD(rename(BSTR _pathTo, BSTR _newName)) PURE;
 	STDMETHOD(openFileSystem(BSTR _pathToFile, bool _createNew)) PURE;
 	STDMETHOD(createFileSystem(BSTR _pathToFile, size_t _blockSize, size_t _blocksCount)) PURE;
 	STDMETHOD(closeFileSystem()) PURE;
