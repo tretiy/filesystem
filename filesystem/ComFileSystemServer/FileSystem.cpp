@@ -25,7 +25,7 @@ STDMETHODIMP FileSystem::QueryInterface(REFIID riid, void** ppv)
 {
 	*ppv = 0;
 
-	if (riid == IID_IUnknown || riid == IID_IMath)
+	if (riid == IID_IUnknown || riid == IID_IFileSystem)
 		*ppv = this;
 
 	if (*ppv)
@@ -72,6 +72,52 @@ SAFEARRAY* FileSystem::makeBSTRarray(std::vector<std::wstring>& _strings)
 	}
 	
 	return stringsBSTR;
+}
+
+VARIANT* FileSystem::makeByteVariant(std::vector<char>& _bytes)
+{
+	SAFEARRAY FAR*  psarray;
+	SAFEARRAYBOUND sabounds[1];
+
+	sabounds[0].lLbound = 0;
+	sabounds[0].cElements = (ULONG)_bytes.size();
+
+	long nLbound;
+
+	psarray = SafeArrayCreate(VT_UI1, 1, sabounds);
+	if (psarray == NULL)
+		return nullptr;
+
+	for (nLbound = 0; nLbound < (long)sabounds[0].cElements; nLbound++) {
+		if (FAILED(SafeArrayPutElement(psarray, &nLbound, &_bytes[nLbound]))) {
+			SafeArrayDestroy(psarray);
+			return nullptr;
+		}
+	}
+	VARIANT* vtResult = new VARIANT();
+	vtResult->vt = VT_ARRAY | VT_UI1;
+	vtResult->parray = psarray;
+	return vtResult;
+}
+
+std::vector<char>* FileSystem::makeByteArray(VARIANT* _bytes)
+{
+	if (_bytes->vt != (VT_ARRAY | VT_UI1))
+		return nullptr;
+
+	auto arraySize = _bytes->parray->rgsabound[0].cElements;
+	auto retVec = new std::vector<char>(arraySize);
+	long nLbound;
+	for (nLbound = 0; nLbound < (long)_bytes->parray->rgsabound[0].cElements; nLbound++)
+	{
+		if (FAILED(SafeArrayGetElement(_bytes->parray, &nLbound, &retVec[nLbound]))) 
+		{
+			delete retVec;
+			return nullptr;
+		}
+	}
+
+	return retVec;
 }
 
 //filesystem operations
@@ -168,19 +214,58 @@ STDMETHODIMP FileSystem::exists(BSTR _path)
 	return E_FAIL;
 }
 
-STDMETHODIMP_(SAFEARRAY*) FileSystem::openFile(BSTR _pathToFile, bool _seekToBegin)
+STDMETHODIMP FileSystem::openFile(BSTR _pathToFile, bool _seekToBegin, size_t* _fileIdx, size_t* _position)
 {
-	return nullptr;
+	if (_pathToFile != nullptr)
+	{
+		std::wstring path(_pathToFile, SysStringLen(_pathToFile));
+		auto desc = fsImpl.openFile(path, _seekToBegin);
+		if (desc.isValid())
+		{
+			*_fileIdx = desc.infoDescIdx;
+			*_position = desc.seekPos;
+			return S_OK;
+		}
+	}
+	return E_FAIL;
 }
 
-STDMETHODIMP_(size_t) FileSystem::writeToFile(SAFEARRAY*_file, SAFEARRAY* _data, size_t _count)
+STDMETHODIMP_(size_t) FileSystem::writeToFile(size_t _fileIdx, size_t* _position, VARIANT* _data, size_t _count)
 {
-	return size_t(0);
+	if (_fileIdx > 0)
+	{
+		auto bytes = makeByteArray(_data);
+		if (bytes != nullptr)
+		{
+			FileDescriptor fDesc;
+			fDesc.infoDescIdx = _fileIdx;
+			fDesc.seekPos = *_position;
+			auto writed = fsImpl.writeToFile(fDesc, &(*bytes)[0], _count);
+			*_position = fDesc.seekPos;
+			delete bytes;
+			return writed;
+		}
+	}
+
+	return size_t{ 0 };
 }
 
-STDMETHODIMP_(size_t) FileSystem::readFromFile(SAFEARRAY* _file, SAFEARRAY* _data, size_t _count)
+STDMETHODIMP_(size_t) FileSystem::readFromFile(size_t _fileIdx, size_t* _position, VARIANT* _data, size_t _count)
 {
-	return size_t(0);
+	if (_fileIdx > 0)
+	{
+		auto bytes = std::vector<char>(_count);
+		
+		FileDescriptor fDesc;
+		fDesc.infoDescIdx = _fileIdx;
+		fDesc.seekPos = *_position;
+		auto readed = fsImpl.readFromFile(fDesc, &bytes[0], _count);
+		*_position = fDesc.seekPos;
+		_data = makeByteVariant(bytes);
+		return readed;
+	}
+
+	return size_t{ 0 };
 }
 //file operations
 STDMETHODIMP FileSystem::openFileSystem(BSTR _pathToFile, bool _createNew)
@@ -195,6 +280,7 @@ STDMETHODIMP FileSystem::openFileSystem(BSTR _pathToFile, bool _createNew)
 	}
 	return E_FAIL;
 }
+
 STDMETHODIMP FileSystem::closeFileSystem()
 {
 	if (fsImpl.closeFileSystem())

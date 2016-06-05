@@ -2,12 +2,6 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="fileSystemImpl.cpp" />
-    <ClCompile Include="portable_serialization\portable_binary_iarchive.cpp">
-      <Filter>portable_serialization</Filter>
-    </ClCompile>
-    <ClCompile Include="portable_serialization\portable_binary_oarchive.cpp">
-      <Filter>portable_serialization</Filter>
-    </ClCompile>
     <ClCompile Include="FileSystemHeader.cpp">
       <Filter>filesystemparts</Filter>
     </ClCompile>
@@ -15,15 +9,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="fileSystemImpl.h" />
-    <ClInclude Include="portable_serialization\portable_binary_archive.hpp">
-      <Filter>portable_serialization</Filter>
-    </ClInclude>
-    <ClInclude Include="portable_serialization\portable_binary_iarchive.hpp">
-      <Filter>portable_serialization</Filter>
-    </ClInclude>
-    <ClInclude Include="portable_serialization\portable_binary_oarchive.hpp">
-      <Filter>portable_serialization</Filter>
-    </ClInclude>
     <ClInclude Include="groupDescriptor.h">
       <Filter>filesystemparts</Filter>
     </ClInclude>
@@ -53,9 +38,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="portable_serialization">
-      <UniqueIdentifier>{5ac05ead-6ed9-428a-af54-8bdcd49a5d94}</UniqueIdentifier>
-    </Filter>
     <Filter Include="filesystemparts">
       <UniqueIdentifier>{25dc1a0f-34c2-44fb-9ddb-e94faed578ad}</UniqueIdentifier>
     </Filter>

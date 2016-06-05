@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 	cout << "Instance created" << endl;
 
 	IFileSystem* pFileSystem = NULL;
-	hr = pUnk->QueryInterface(IID_IMath, (LPVOID*)&pFileSystem);
+	hr = pUnk->QueryInterface(IID_IFileSystem, (LPVOID*)&pFileSystem);
 	pUnk->Release();
 	if (FAILED(hr))
 	{

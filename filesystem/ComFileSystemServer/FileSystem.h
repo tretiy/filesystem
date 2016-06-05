@@ -10,6 +10,9 @@ class FileSystem : public IFileSystem
 {
 	fileSystemImpl fsImpl;
 	SAFEARRAY* makeBSTRarray(std::vector<std::wstring>& _strings);
+	VARIANT* makeByteVariant(std::vector<char>& _bytes);
+	std::vector<char>* makeByteArray(VARIANT* _bytes);
+
 protected:
 	// Reference count
 	long          m_lRef;
@@ -32,9 +35,9 @@ public:
 	STDMETHOD(createFile(BSTR _filePath));
 	STDMETHOD(removeFile(BSTR _filePath));
 	STDMETHOD(exists(BSTR _path));
-	STDMETHOD_(SAFEARRAY*, openFile(BSTR _pathToFile, bool _seekToBegin));
-	STDMETHOD_(size_t, writeToFile(SAFEARRAY*_file, SAFEARRAY* _data, size_t _count));
-	STDMETHOD_(size_t, readFromFile(SAFEARRAY* _file, SAFEARRAY* _data, size_t _count));
+	STDMETHOD(openFile(BSTR _pathToFile, bool _seekToBegin, size_t* _fileIdx, size_t* _position));
+	STDMETHOD_(size_t, writeToFile(size_t _fileIdx, size_t* _position, VARIANT* _data, size_t _count));
+	STDMETHOD_(size_t, readFromFile(size_t _fileIdx, size_t* _position, VARIANT* _data, size_t _count));
 	//file operations
 	STDMETHOD(openFileSystem(BSTR _pathToFile, bool _createNew));
 	STDMETHOD(closeFileSystem());

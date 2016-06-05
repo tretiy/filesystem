@@ -14,7 +14,7 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, void** ppv)
 	pCF = 0;
 
 	// Make sure the CLSID is for our Expression component
-	if (rclsid != CLSID_Math)
+	if (rclsid != CLSID_FileSystem)
 		return(E_FAIL);
 
 	pCF = new FileSystemClassFactory;
