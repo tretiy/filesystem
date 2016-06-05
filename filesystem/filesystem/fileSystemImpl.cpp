@@ -17,16 +17,20 @@ fileSystemImpl::~fileSystemImpl()
 
 bool fileSystemImpl::createDirectory(const std::wstring& _directoryPath)
 {
+	 std::lock_guard<std::recursive_mutex> lock(lockObj);
+
 	return createEntry(_directoryPath, EntryType::Directory);
 }
 
 bool fileSystemImpl::createFile(const std::wstring& _filePath)
 {
+	 std::lock_guard<std::recursive_mutex> lock(lockObj);
 	return createEntry(_filePath, EntryType::RegularFile);
 }
 
 bool fileSystemImpl::removeDirectory(const std::wstring& _directoryPath)
 {
+	 std::lock_guard<std::recursive_mutex> lock(lockObj);
 	return removeEntry(_directoryPath);
 }
 
@@ -188,26 +192,36 @@ bool fileSystemImpl::checkEntryName(const std::wstring& _entryName)
 
 std::vector<std::wstring> fileSystemImpl::getDirectoriesList(const std::wstring& _directoryPath)
 {
+	 std::lock_guard<std::recursive_mutex> lock(lockObj);
+
 	return getDirectoryContentList(_directoryPath, EntryType::Directory);
 }
 
 std::vector<std::wstring> fileSystemImpl::getFilesList(const std::wstring& _directoryPath)
 {
+	 std::lock_guard<std::recursive_mutex> lock(lockObj);
+
 	return getDirectoryContentList(_directoryPath, EntryType::RegularFile);
 }
 
 bool fileSystemImpl::removeFile(const std::wstring& _fullName)
 {
+	 std::lock_guard<std::recursive_mutex> lock(lockObj);
+
 	return removeEntry(_fullName);
 }
 
 bool fileSystemImpl::exists(const std::wstring& _path)
 {
+	std::lock_guard<std::recursive_mutex> lock(lockObj);
+
 	return getPathDescriptor(_path).isValid();
 }
 
 bool fileSystemImpl::openFileSystem(const std::wstring& _pathToFile, bool _createNew/* = false*/)
 {
+	 std::lock_guard<std::recursive_mutex> lock(lockObj);
+
 	if (_pathToFile.empty())
 		return false;
 
@@ -222,6 +236,8 @@ bool fileSystemImpl::openFileSystem(const std::wstring& _pathToFile, bool _creat
 
 bool fileSystemImpl::closeFileSystem()
 {
+	 std::lock_guard<std::recursive_mutex> lock(lockObj);
+
 	if (fileSystemSource.is_open())
 	{
 		try
@@ -245,6 +261,8 @@ bool fileSystemImpl::closeFileSystem()
 
 FileDescriptor fileSystemImpl::openFile(const std::wstring& _pathToFile, bool _seekToBegin/*=true*/)
 {
+	 std::lock_guard<std::recursive_mutex> lock(lockObj);
+
 	auto file = FileDescriptor();
 	auto infoIdx = getPathDescriptorIdx(_pathToFile);
 	if (infoIdx != infos.size() && infos[infoIdx].entryType == EntryType::RegularFile)
@@ -259,6 +277,8 @@ FileDescriptor fileSystemImpl::openFile(const std::wstring& _pathToFile, bool _s
 
 size_t fileSystemImpl::writeToFile(FileDescriptor & _file, const char * _data, size_t _count)
 {
+	 std::lock_guard<std::recursive_mutex> lock(lockObj);
+
 	//check descriptor
 	if (_file.infoDescIdx < infos.size() && infos[_file.infoDescIdx].entryType == EntryType::RegularFile && _count > 0)
 	{
@@ -309,6 +329,8 @@ size_t fileSystemImpl::writeToFile(FileDescriptor & _file, const char * _data, s
 
 size_t fileSystemImpl::readFromFile(FileDescriptor & _file, char * _data, size_t _count)
 {
+	 std::lock_guard<std::recursive_mutex> lock(lockObj);
+
 	if (_file.infoDescIdx < infos.size() && infos[_file.infoDescIdx].entryType == EntryType::RegularFile && _count > 0)
 	{
 		auto& fileInfoDesc = infos[_file.infoDescIdx];
@@ -341,6 +363,7 @@ size_t fileSystemImpl::readFromFile(FileDescriptor & _file, char * _data, size_t
 
 bool fileSystemImpl::createFileSystem(const std::wstring& _pathToFile, size_t _blockSize, size_t _blocksCount)
 {
+
 	if (fileSystemSource.is_open() || _blockSize == 0 || _blocksCount == 0 || _blockSize * _blocksCount > MAX_FS_SIZE)
 	{
 		return false;

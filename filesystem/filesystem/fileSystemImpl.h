@@ -7,6 +7,7 @@
 #include "EntryBlocks.h"
 
 #include <fstream>
+#include <mutex>
 #include "boost\serialization\vector.hpp"
 using namespace filesystem;
 
@@ -20,6 +21,7 @@ class fileSystemImpl :public IBaseFileSystem
 	std::vector<bool> infoBlocks;
 	std::vector<InfoDescriptor> infos;
 
+	std::recursive_mutex lockObj;
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version)
