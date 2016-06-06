@@ -13,7 +13,7 @@ using namespace filesystem;
 
 class fileSystemImpl :public IBaseFileSystem
 {
-	static const size_t MAX_ENTRYNAME_LENGTH = 255;
+	static const size_t MAX_ENTRYNAME_LENGTH = 20;
 	static const size_t MAX_FS_SIZE = 1024 * 1024 * 1024;
 	std::fstream fileSystemSource;
 	FileSystemHeader mainSector;
@@ -39,7 +39,7 @@ class fileSystemImpl :public IBaseFileSystem
 	size_t getEntryBlockIdx(InfoDescriptor& _entryDesc, size_t _blockNumInFile);
 	EntryBlocks getEntryInderectBlocks(InfoDescriptor& _entryDesc);
 	bool setEntryInderectBlocks(InfoDescriptor& _entryDesc, EntryBlocks& _inderectBlocks);
-	bool addEntryDataBlock(InfoDescriptor& _entry);
+	bool addEntryDataBlock(InfoDescriptor& _entry, size_t nBlocks = 1);
 
 	size_t getFreeBlockIdx();
 	size_t getFreeInfoIdx();
@@ -48,8 +48,8 @@ class fileSystemImpl :public IBaseFileSystem
 	InfoDescriptor getChildDescriptor(InfoDescriptor& _parentDir, const std::wstring& _childName);
 	size_t getChildDescriptorIdx(InfoDescriptor& _parentDir, const std::wstring& _childName);
 	bool removeDescriptorIdx(size_t _descIdx);
-	bool getDirectoryContent(InfoDescriptor& _desc, std::vector<EntryData>& _content);
-	bool setDirectoryContent(InfoDescriptor& _desc, std::vector<EntryData>& _content);
+	bool getDirectoryContent(size_t _descIdx, std::vector<EntryData>& _content);
+	bool setDirectoryContent(size_t _descIdx, std::vector<EntryData>& _content);
 	std::vector<std::wstring> getDirectoryContentList(const std::wstring& _directoryPath,
 		EntryType _type = EntryType::NotSet);
 	bool createEntry(const std::wstring& _entryPath, EntryType _type);

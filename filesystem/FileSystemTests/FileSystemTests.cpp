@@ -76,13 +76,14 @@ namespace FileSystemTests
 			Assert::IsFalse(impl.removeDirectory(L"/fDir/sDir/"));
 			Assert::IsTrue(impl.removeDirectory(L"/fDir/newname/"));
 			Assert::IsTrue(impl.removeDirectory(L"/fDir"));
-			// TODO add checks
 			// for max directories in directory
-			for (auto i = 0; i < 511; ++i)
+			bool isAllOk = true;
+			for (auto i = 0; i < 100; ++i)
 			{
 				std::wstring name = L"/dir" + std::to_wstring(i);
-				Assert::IsTrue(impl.createDirectory(name));
+				isAllOk = impl.createDirectory(name);
 			}
+			Assert::IsFalse(isAllOk);
 			Assert::IsFalse(impl.createDirectory(L"badDirectory"));
 		}
 
