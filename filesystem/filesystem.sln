@@ -16,6 +16,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComFileSystemServer", "ComF
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ComFileSystemClient", "ComFileSystemClient\ComFileSystemClient.vcxproj", "{DCB914BA-EDB1-4313-8B77-F129115E8403}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E8947851-99D3-4E72-8EE1-81CAEBCA11F7} = {E8947851-99D3-4E72-8EE1-81CAEBCA11F7}
+		{E746FA7A-603C-4E26-B526-3F5313C6F64B} = {E746FA7A-603C-4E26-B526-3F5313C6F64B}
+		{816E86A5-F0AF-4D66-B17A-CEA91FD2CF4A} = {816E86A5-F0AF-4D66-B17A-CEA91FD2CF4A}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

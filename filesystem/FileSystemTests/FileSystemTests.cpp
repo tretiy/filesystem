@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
 #include "fileSystemImpl.h"
-#include "FileSystemHeader.h"
 #include <string>
 #include <vector>
 #include <experimental/filesystem>
